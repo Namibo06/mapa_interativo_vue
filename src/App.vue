@@ -15,6 +15,8 @@
             <label class="form-check-label"> {{ courier.name }} </label>
           </div>
         </div><!--filter_wrapers-->
+
+        <button type="button" @click="clearMapWithMarkersAndPolylines">Limpar Mapa</button>
       </div><!--filters-->
 
       <div class="couriers_map">
@@ -25,6 +27,7 @@
         />
 
         <Map 
+          ref="map"
           :selectedDeliverer="selectedDeliverer" 
           :order="selectedOrder" 
         />
@@ -66,6 +69,10 @@ export default {
         this.selectedCouriers.splice(index, 1);
       }
     },
+
+    clearMapWithMarkersAndPolylines(){
+      this.$refs.map.clearMap();
+    }
   },
 };
 </script>
