@@ -4,6 +4,7 @@
 
 <script>
 import { Loader } from '@googlemaps/js-api-loader';
+import { toRaw } from 'vue';
 
 let loader;
 
@@ -150,9 +151,9 @@ export default {
     }, 
     
     clearMarkers() { 
-      this.markers.forEach(({ marker }) => {
+      this.markers.forEach(({ marker }, index) => {
         if (marker) {
-          marker.setMap(null);
+          toRaw(marker).setMap(null);
         }
       });
 
@@ -177,7 +178,7 @@ export default {
     },
 
     moveDelivererAlongPath(deliverer, route) {
-      const timePerStep = 1000; 
+      const timePerStep = 1000;
       const delivererMarker = this.markers.find(marker => marker.id === `deliverer-${deliverer.id}`)?.marker;
 
       if (!delivererMarker) {
