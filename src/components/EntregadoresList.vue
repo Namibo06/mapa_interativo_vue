@@ -2,26 +2,23 @@
   <div class="container mt-5">
     <div class="deliverers-container fade-in">
       <div v-for="order in filteredOrders" :key="order.id" class="order-card card mb-4">
-        <div class="card-header p-3 d-flex justify-content-between align-items-center">
-          <h3 class="order-id card-title">Pedido: {{ order.id }}</h3>
-        </div>
-
         <div class="order-details card-body card_deliverers">
           <div class="card_data">
-            <p><strong>Entregador:</strong> {{ getDelivererName(order.deliveryId) }}</p>
-            <p><strong>Restaurante:</strong> {{ order.companyName }}</p>
-            <p><strong>Cliente:</strong> {{ order.customerName }}</p>
-          </div>
+            <strong>Pedido:</strong> <span>{{ order.id }} | </span>
+            <strong>Entregador:</strong> <span>{{ getDelivererName(order.deliveryId) }} | </span>
+            <strong>Restaurante:</strong> <span>{{ order.companyName }} | </span>
+            <strong>Cliente:</strong> <span>{{ order.customerName }}</span>
+          </div><!--card_data-->
           
           <div class="buttons-group mt-2 card_buttons">
-            <b-button variant="outline-primary" @click="viewOnMap(order)" :disabled="order.completed" class="btn-sm">
+            <b-button variant="outline-primary" @click="viewOnMap(order)" :disabled="order.completed" class="btn-sm button_list_custom">
               Ver no Mapa
             </b-button>
-            <b-button variant="success" @click="completeOrder(order.id)" :disabled="order.completed" class="complete-trip-btn btn-sm position-relative">
+            <b-button variant="success" @click="completeOrder(order.id)" :disabled="order.completed" class="complete-trip-btn btn-sm position-relative button_list_custom">
               {{ order.completed ? 'Concluído' : 'Concluir Viagem' }}
             </b-button>
-          </div>
-        </div>
+          </div><!--card_buttons-->
+        </div><!--card_deliverers-->
       </div>
     </div>
   </div>
@@ -121,14 +118,63 @@ export default {
 
 .card_deliverers{
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  flex-direction: column;
+}
+
+.card_data > strong{
+  font-size: 17px;
+}
+
+.card_data > span{
+  font-size: 15px;
 }
 
 .card_buttons{
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 20px;
-  padding-left: 10px;
+  padding-top: 10px;
+}
+
+@media (width < 680px){
+  .card_data > strong{
+    font-size: 15px;
+  }
+
+  .card_data > span{
+    font-size: 14px;
+  }
+}
+
+@media (width < 380px){
+  .card_data > strong{
+    font-size: 14px;
+  }
+
+  .card_data > span{
+    font-size: 13px;
+  }
+
+  .card_buttons > .button_list_custom{
+    width: 100px;
+    height: 30px;
+    font-size: 12px;
+    padding: 0 5px;
+  }
+}
+
+@media (width < 330px){
+  .card_buttons{
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card_buttons > .button_list_custom{
+    width: 90%;
+    height: 30px;
+    font-size: 14px;
+    
+    margin: 0 auto;
+  }
 }
 </style>
