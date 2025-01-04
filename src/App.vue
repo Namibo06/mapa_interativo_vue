@@ -1,25 +1,36 @@
 <template>
   <div class="container">
-    <div class="search-container mb-4">
-      <input 
-        type="text"
-        class="form-control"
-        v-model="searchTerm"
-        placeholder="Pesquisar entregador pelo nome..."
-      >
-    </div>
+    <main>
+      <div class="filters">
+        <h3>Filtros:</h3>
 
-    <EntregadoresList 
-      :deliverers="filteredDeliverers" 
-      @showRouteOnMap="handleShowRouteOnMap" 
-    />
-    <div class="container position-fixed shadow-lg rounded p-4 bg-white border border-secondary shadow-lg rounded overflow-hidden d-flex flex-column" style="top: 0px; left: 50%; transform: translateX(-50%);width: 600px; max-width: 97%; height: 600px; margin: 20px auto;" :class="{ 'd-block': showMap, 'd-none': !showMap }">
-      <button class="btn btn-danger close-btn" @click="hideMap">✖</button>
-      <Map 
-        :selectedDeliverer="selectedDeliverer" 
-        :order="selectedOrder" 
-      />
-    </div>
+        <div class="filter_wrapers">
+          <div class="form-check filter_single" v-for="courier in deliverers" :key="courier.name">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              :checked="selectedCouriers.includes(courier.name)"
+              @change="toggleCourierInSearch(courier.name)" 
+            />
+            <label class="form-check-label"> {{ courier.name }} </label>
+          </div>
+        </div><!--filter_wrapers-->
+      </div><!--filters-->
+
+      <div class="couriers_map">
+        <EntregadoresList 
+          :deliverers="deliverers" 
+          :searchTerm="searchTerm"
+          :selectedCouriers="selectedCouriers"
+          @showRouteOnMap="handleShowRouteOnMap"
+        />
+
+        <Map 
+          :selectedDeliverer="selectedDeliverer" 
+          :order="selectedOrder" 
+        />
+      </div><!--couriers_map-->
+    </main>
   </div>
 </template>
 
@@ -36,25 +47,11 @@ export default {
   data() {
     return {
       deliverers,
-      searchTerm: '',
       selectedDeliverer: null,
       selectedOrder: null,
-      showMap: false
+      showMap: false,
+      selectedCouriers: []
     };
-  },
-  computed: {
-    filteredDeliverers(){
-      console.log(this.searchTerm);
-      if(!this.searchTerm.trim()){
-        console.log('sem nada exibe todos');
-        return this.deliverers;
-      }
-
-      const term = this.searchTerm.toLowerCase();
-      return this.deliverers.filter(deliverer =>
-        deliverer.name.toLowerCase().includes(term)
-      );
-    }
   },
   methods: {
     handleShowRouteOnMap(deliverer, order) {
@@ -62,9 +59,14 @@ export default {
       this.selectedOrder = order;
       this.showMap = true;
     },
-    hideMap() {
-      this.showMap = false;
-    }
+    toggleCourierInSearch(courier) {
+      const index = this.selectedCouriers.indexOf(courier);
+      if (index === -1) {
+        this.selectedCouriers.push(courier);
+      } else {
+        this.selectedCouriers.splice(index, 1);
+      }
+    },
   },
 };
 </script>
@@ -75,27 +77,55 @@ export default {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   }
 
-  .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    border: none;
-    width: 43px;
-    height: 43px;
-    font-size: 14px;
-    cursor: pointer;
-  }
-
   .search-container {
     display: flex;
-    justify-content: center;
-    width: 90%;
+    justify-content: space-between;
+    width: 100%;
     margin: 30px auto 0 auto;
   }
 
   .form-control {
     max-width: 400px;
     width: 100%;
+  }
+
+  main{
+    padding-top: 80px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .filters{
+    padding: 0 45px;
+  }
+
+  .filter_wrapers,main > .couriers_map{
+    display: flex;
+    flex-direction: row;
+  }
+
+  .filter_single{
+    margin-right: 15px;
+  }
+
+  .filter_single:last-child{
+    margin-right: 0;
+  }
+
+  .checkbox_custom{
+    width: 20px;
+    height: 20px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .checkbox_custom_active{
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background-color: rgb(0,200,200);
+    cursor: pointer;
   }
 
   @media (width < 361px) {
