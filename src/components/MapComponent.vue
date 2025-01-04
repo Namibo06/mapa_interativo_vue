@@ -151,7 +151,7 @@ export default {
     }, 
     
     clearMarkers() { 
-      this.markers.forEach(({ marker }, index) => {
+      this.markers.forEach(({ marker }) => {
         if (marker) {
           toRaw(marker).setMap(null);
         }
