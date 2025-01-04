@@ -229,12 +229,10 @@ export default {
 #map {
   border-radius: 10px; 
   height: 500px; 
-  width: 500px; 
+  width: 700px; 
   max-width: 97%; 
   z-index: 0; 
-  position: absolute; 
-  top: 60px; 
-  left: 50%; 
-  transform: translateX(-50%);
+  position: fixed;
+  top: -80px;
 }
 </style>
