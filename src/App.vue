@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container-fluid">
     <main>
       <div class="filters">
         <h3>Filtros:</h3>
@@ -20,7 +20,6 @@
       <div class="couriers_map">
         <EntregadoresList 
           :deliverers="deliverers" 
-          :searchTerm="searchTerm"
           :selectedCouriers="selectedCouriers"
           @showRouteOnMap="handleShowRouteOnMap"
         />
@@ -84,11 +83,6 @@ export default {
     margin: 30px auto 0 auto;
   }
 
-  .form-control {
-    max-width: 400px;
-    width: 100%;
-  }
-
   main{
     padding-top: 80px;
     display: flex;
@@ -96,7 +90,9 @@ export default {
   }
 
   .filters{
-    padding: 0 45px;
+    width: 1050px;
+    max-width: 99%;
+    margin: 0 auto;
   }
 
   .filter_wrapers,main > .couriers_map{
@@ -126,6 +122,43 @@ export default {
     border-radius: 4px;
     background-color: rgb(0,200,200);
     cursor: pointer;
+  }
+
+  @media (width < 1130px){
+    .filters{
+      width: auto;
+      max-width: auto;
+      padding-left: 30px;
+      margin: 0;
+    }
+  }
+
+  @media (width < 1000px) {
+    .filters{
+      padding-left: 85px;
+    }
+
+    .filter_wrapers,main > .couriers_map{
+      display: flex;
+      flex-direction: column-reverse;
+    }
+
+    .filter_wrapers{
+      display: flex;
+      flex-direction: row;
+    }
+  }
+
+  @media (width < 700px) {
+    .filters{
+      padding-left: 65px;
+    }
+  }
+
+  @media (width < 640px) {
+    .filters{
+      padding-left: 35px;
+    }
   }
 
   @media (width < 361px) {
