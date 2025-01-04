@@ -82,7 +82,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
   body {
     background-color: #F7FDFF;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
