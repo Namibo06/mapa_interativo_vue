@@ -14,9 +14,14 @@
             />
             <label class="form-check-label"> {{ courier.name }} </label>
           </div>
-        </div><!--filter_wrapers-->
 
-        <button type="button" @click="clearMapWithMarkersAndPolylines">Limpar Mapa</button>
+          <b-button variant="danger"
+            @click="clearMapWithMarkersAndPolylines"
+            class="clear_map"
+          >
+            Limpar Mapa
+          </b-button>  
+        </div><!--filter_wrapers-->
       </div><!--filters-->
 
       <div class="couriers_map">
@@ -83,15 +88,8 @@ export default {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   }
 
-  .search-container {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin: 30px auto 0 auto;
-  }
-
   main{
-    padding-top: 80px;
+    padding-top: 40px;
     display: flex;
     flex-direction: column;
   }
@@ -100,6 +98,12 @@ export default {
     width: 1050px;
     max-width: 99%;
     margin: 0 auto;
+  }
+
+  .filters > h3{
+    letter-spacing: 7%;
+    font-size: 27px;
+    font-weight: 400;
   }
 
   .filter_wrapers,main > .couriers_map{
@@ -129,6 +133,17 @@ export default {
     border-radius: 4px;
     background-color: rgb(0,200,200);
     cursor: pointer;
+  }
+
+  .clear_map{
+    position: relative;
+    top: -5px;
+    left: 20px;
+    transition: top 0.2s ease-in;
+  }
+
+  .clear_map:active{
+    top: -3px;
   }
 
   @media (width < 1130px){
@@ -164,7 +179,50 @@ export default {
 
   @media (width < 640px) {
     .filters{
-      padding-left: 35px;
+      padding-left: 30px;
+    }
+  }
+
+  @media (width < 540px) {
+    .filters{
+      padding-left: 25px;
+    }
+  }
+
+  @media (width < 420px) {
+    .filters{
+      padding-left: 20px;
+    }
+
+    .filter_wrapers{
+      display: flex;
+      flex-direction: column;
+    }
+
+    .filter_single:nth-child(1){
+      margin-top: 10px;
+    }
+
+    .filter_single > input{
+      cursor: pointer;
+    }
+
+    .filter_single > input{
+      margin-bottom: 8px;
+    }
+
+    .filter_single > input:last-child{
+      margin-bottom: 0;
+    }
+
+    .clear_map{
+      top: 10px;
+      left: -33%;
+      margin: 15px auto;
+    }
+
+    .clear_map:active{
+      top: 12px;
     }
   }
 
@@ -172,11 +230,27 @@ export default {
     input::placeholder{
       font-size: 14px;
     }
+
+    .filters{
+      padding-left: 15px;
+    }
+
+    .clear_map{
+      left: -29%;
+    }
   }
 
   @media (width < 290px) {
     input::placeholder{
       font-size: 12px;
+    }
+
+    .filters{
+      padding-left: 10px;
+    }
+
+    .clear_map{
+      left: -26%;
     }
   }
 </style>
