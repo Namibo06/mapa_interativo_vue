@@ -232,7 +232,25 @@ export default {
   width: 700px; 
   max-width: 97%; 
   z-index: 0; 
-  position: fixed;
+  position: relative;
   top: -80px;
+  margin-right: 20px;
+}
+
+@media (width < 1000px) {
+  #map {
+    top: 0;
+    width: 80%;
+    height: 300px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 40px;
+  }
+}
+
+@media (width < 640px) {
+  #map {
+    width: 90%;
+  }
 }
 </style>
