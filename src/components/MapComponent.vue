@@ -71,7 +71,7 @@ export default {
       this.map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: -12.2666, lng: -38.9663 },
         zoom: 14,
-        streetViewControl: false,
+        streetViewControl: true,
       });
 
       this.directionsService = new google.maps.DirectionsService();
