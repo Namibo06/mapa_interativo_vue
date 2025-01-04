@@ -9,7 +9,7 @@
         <div class="order-details card-body card_deliverers">
           <div class="card_data">
             <p><strong>Entregador:</strong> {{ getDelivererName(order.deliveryId) }}</p>
-            <p><strong>Empresa:</strong> {{ order.companyName }}</p>
+            <p><strong>Restaurante:</strong> {{ order.companyName }}</p>
             <p><strong>Cliente:</strong> {{ order.customerName }}</p>
           </div>
           
