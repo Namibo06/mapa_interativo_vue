@@ -11,6 +11,7 @@
               type="checkbox"
               :checked="selectedCouriers.includes(courier.name)"
               @change="toggleCourierInSearch(courier.name)" 
+              @click="mapDeliverers(courier)"
             />
             <label class="form-check-label"> {{ courier.name }} </label>
           </div>
@@ -35,6 +36,7 @@
           ref="map"
           :selectedDeliverer="selectedDeliverer" 
           :order="selectedOrder" 
+          :updateMapDeliverers="updateMapDeliverers"
         />
       </div><!--couriers_map-->
     </main>
@@ -56,6 +58,7 @@ export default {
       deliverers,
       selectedDeliverer: null,
       selectedOrder: null,
+      updateMapDeliverers: null,
       showMap: false,
       selectedCouriers: []
     };
@@ -73,11 +76,31 @@ export default {
       } else {
         this.selectedCouriers.splice(index, 1);
       }
+      this.updateMapAccordingToSelection();
     },
 
     clearMapWithMarkersAndPolylines(){
       this.$refs.map.clearMap();
-    }
+    },
+
+    mapDeliverers(deliverer){
+      this.updateMapDeliverers = deliverer;
+    },
+
+    updateMapAccordingToSelection() { 
+      this.clearMapWithMarkersAndPolylines();
+
+      if (this.selectedCouriers.length === this.deliverers.length || this.selectedCouriers.length === 0) { 
+        this.$refs.map.addAllOrdersToMap(); 
+      } else { 
+        this.selectedCouriers.forEach(courier => { 
+          const deliverer = this.deliverers.find(d => d.name === courier); 
+          if (deliverer) { 
+            this.$refs.map.addAllOrdersForDeliverer(deliverer); 
+          } 
+        }); 
+      } 
+    },
   },
 };
 </script>
@@ -125,19 +148,7 @@ export default {
     margin-right: 0;
   }
 
-  .checkbox_custom{
-    width: var(--width-height-checkbox);
-    height: var(--width-height-checkbox);
-    border: 1px solid #333;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .checkbox_custom_active{
-    width: var(--width-height-checkbox);
-    height: var(--width-height-checkbox);
-    border-radius: 4px;
-    background-color: rgb(0,200,200);
+  .filter_single > input{
     cursor: pointer;
   }
 
