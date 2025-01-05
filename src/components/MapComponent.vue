@@ -5,6 +5,7 @@
 <script>
 import { Loader } from '@googlemaps/js-api-loader';
 import { toRaw } from 'vue';
+import { orders } from '@/services/order';
 
 let loader;
 
@@ -18,6 +19,10 @@ export default {
       type: Object,
       default: null,
     },
+    updateMapDeliverers: {
+      type: Object,
+      default: null
+    }
   },
   data() {
     return {
@@ -26,7 +31,8 @@ export default {
       markers: [], 
       polylines: [], 
       movementInterval: null, 
-      destinationReached: false 
+      destinationReached: false,
+      orders: orders
     };
   },
   watch: {
@@ -39,17 +45,23 @@ export default {
       if (newValue) {
         this.updateMap(this.selectedDeliverer, newValue);
       }
+    },
+    updateMapDeliverers(newValue){
+      if(newValue){
+        this.addAllOrdersForDeliverer(newValue);
+      }
     }
   },
   mounted() {
-    this.initMap();
+    this.initMap().then(() => {
+      this.addAllOrdersToMap();
+    });
   },
   beforeUnmount() {
     clearInterval(this.movementInterval);
   },
   methods: {
     async initMap() {
-
       if (!loader) {
         loader = new Loader({
           apiKey: process.env.VUE_APP_GOOGLE_MAPS_API_KEY,
@@ -80,16 +92,16 @@ export default {
     drawRouteForDeliverer(deliverer, order) {
       this.clearMap();
 
-      this.addMarker(deliverer.currentLocation, deliverer.name.charAt(0),'deliverer', `deliverer-${deliverer.id}`);
-      this.addMarker(order.restaurantLocation, "R",'restaurant', `restaurant-${order.id}`);
-      this.addMarker(order.customerLocation, "C",'customer', `customer-${order.id}`);
+      this.addMarker(order.restaurantLocation, "R", 'restaurant', `restaurant-${order.id}`);
+
+      this.addMarker(order.restaurantLocation, "E", 'deliverer', `deliverer-${deliverer.id}`);
+      
+      this.addMarker(order.customerLocation, "C", 'customer', `customer-${order.id}`);
 
       const request = {
-        origin: deliverer.currentLocation,
+        origin: order.restaurantLocation,
         destination: order.customerLocation,
-        waypoints: [
-          { location: order.restaurantLocation, stopover: true }
-        ],
+        waypoints: [],
         travelMode: google.maps.TravelMode.DRIVING
       };
 
@@ -122,16 +134,19 @@ export default {
 
       const icons = { 
         deliverer: { 
-          url: '/assets/icone_entregador.png', 
-          scaledSize: new google.maps.Size(32, 32), 
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: 'white',
+          fillOpacity: 1,
+          scale: 8,
+          strokeColor: 'black',
+          strokeWeight: 2
         }, 
         restaurant: { 
-          url: '/assets/icone_restaurante.webp', 
+          url: '', 
           scaledSize: new google.maps.Size(32, 32), 
         }, 
         customer: { 
-          url: '/assets/icone_cliente.webp', 
-          scaledSize: new google.maps.Size(32, 32), 
+          url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
         }, 
       };
 
@@ -139,10 +154,26 @@ export default {
         position: position,
         map: this.map,
         title: title,
-        icon: icons[type]
+        icon: icons[type] || icons.deliverer
       });
 
       this.markers.push({ id, marker });
+    },
+
+    addAllOrdersToMap() {
+      this.orders.forEach(order => {
+        this.addMarker(order.customerLocation, "C", "customer", `customer-${order.id}`);
+      });
+    },
+
+    addAllOrdersForDeliverer(deliverer) { 
+      this.clearMap(); 
+      const delivererOrders = this.orders.filter(order => order.deliveryId === deliverer.id); 
+
+      delivererOrders.forEach(order => { 
+        this.addMarker(order.restaurantLocation, "R", "restaurant", `restaurant-${order.id}`); 
+        this.addMarker(order.customerLocation, "C", "customer", `customer-${order.id}`); 
+      }); 
     },
 
     clearPolylines() { 
@@ -156,7 +187,6 @@ export default {
           toRaw(marker).setMap(null);
         }
       });
-
       this.markers = []; 
     }, 
     
