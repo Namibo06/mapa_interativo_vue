@@ -180,6 +180,10 @@ export default {
   flex-direction: column;
 }
 
+.card_data{
+  cursor: auto;
+}
+
 .card_data > strong{
   font-size: 17px;
   color: rgb(32, 3, 56);;
