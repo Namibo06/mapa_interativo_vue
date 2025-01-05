@@ -83,6 +83,11 @@ export default {
 </script>
 
 <style>
+  :root{
+    --display-flex: flex;
+    --width-height-checkbox: 20px;
+  }
+
   body {
     background-color: #F7FDFF;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
@@ -90,7 +95,7 @@ export default {
 
   main{
     padding-top: 40px;
-    display: flex;
+    display: var(--display-flex);
     flex-direction: column;
   }
 
@@ -104,10 +109,11 @@ export default {
     letter-spacing: 7%;
     font-size: 27px;
     font-weight: 400;
+    color: rgb(32, 3, 56);
   }
 
   .filter_wrapers,main > .couriers_map{
-    display: flex;
+    display: var(--display-flex);
     flex-direction: row;
   }
 
@@ -120,25 +126,29 @@ export default {
   }
 
   .checkbox_custom{
-    width: 20px;
-    height: 20px;
+    width: var(--width-height-checkbox);
+    height: var(--width-height-checkbox);
     border: 1px solid #333;
     border-radius: 4px;
     cursor: pointer;
   }
 
   .checkbox_custom_active{
-    width: 20px;
-    height: 20px;
+    width: var(--width-height-checkbox);
+    height: var(--width-height-checkbox);
     border-radius: 4px;
     background-color: rgb(0,200,200);
     cursor: pointer;
   }
 
+  label{
+    color: rgb(32, 3, 56);
+  }
+
   .clear_map{
     position: relative;
     top: -5px;
-    left: 20px;
+    left: var(--width-height-checkbox);
     transition: top 0.2s ease-in;
   }
 
@@ -191,7 +201,7 @@ export default {
 
   @media (width < 420px) {
     .filters{
-      padding-left: 20px;
+      padding-left: var(--width-height-checkbox);
     }
 
     .filter_wrapers{
