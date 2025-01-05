@@ -11,12 +11,39 @@
           </div><!--card_data-->
           
           <div class="buttons-group mt-2 card_buttons">
-            <b-button variant="outline-primary" @click="viewOnMap(order)" :disabled="order.completed" class="btn-sm button_list_custom">
-              Ver no Mapa
-            </b-button>
-            <b-button variant="success" @click="completeOrder(order.id)" :disabled="order.completed" class="complete-trip-btn btn-sm position-relative button_list_custom">
-              {{ order.completed ? 'Concluído' : 'Concluir Viagem' }}
-            </b-button>
+            <i :class="[
+              'bi',
+              order.completed ? 
+              'bi-map-fill'
+              :
+              (order.hovered_map ? 'bi-map-fill' : 'bi-map'),
+              'button_list_custom'
+              ]"
+            :style="order.completed ? 'cursor: auto' : 'cursor:pointer'"
+            @click="order.completed ? 'null' : viewOnMap(order)" 
+            @mouseleave="addedClassMap(order)"
+            @mouseenter="addedClassMapFill(order)"></i>
+            
+            <p 
+            :class="[
+              order.hovered_map
+              ? 'open_title_order'
+              : 'close_title_order'
+            ]"
+            >{{ order.completed ? 'Mapa indisponível' : 'Ver no mapa' }}</p>
+
+            <i :class="['bi', order.completed ? 'bi-check-circle-fill' : 'bi-check-circle' ,'button_list_custom']" 
+            :style="order.completed ? 'cursor: auto' : 'cursor:pointer'"
+            @click="order.completed ? 'null' : completeOrder(order.id)"
+            @mouseleave="addedClassTravel(order)"
+            @mouseenter="addedClassTravelFill(order)"></i>
+            
+            <p
+            :class="[
+              order.hovered_travel 
+              ? 'open_title_order'
+              : 'close_title_order'
+            ]">{{ order.completed ? 'Viagem concluída' : 'Concluir viagem' }}</p>
           </div><!--card_buttons-->
         </div><!--card_deliverers-->
       </div>
@@ -30,7 +57,12 @@ import { orders } from '@/services/order';
 export default {
   data() {
     return {
-      reactiveOrders: [...orders],
+      reactiveOrders: orders.map(order => ({
+        ...order,
+        hovered_map: false,
+        hovered_travel: false
+      })),
+      classMap: 'bi-map',
     };
   },
   props: {
@@ -83,15 +115,42 @@ export default {
         order.completed = true;
       }
     },
+    addedClassMap(order) {
+      order.hovered_map = false; 
+    },
+    addedClassMapFill(order) {
+      order.hovered_map = true; 
+    },
+    addedClassTravel(order) {
+      order.hovered_travel = false; 
+    },
+    addedClassTravelFill(order) {
+      order.hovered_travel = true; 
+    },
   },
 };
 </script>
 
 <style scoped>
+
 @keyframes fadeIn {
   from { opacity: 0; } 
   to { opacity: 1; } 
 } 
+
+.open_title_order{
+  display: flex;
+  position: absolute;
+  top: 40px;
+  background-color: #333;
+  color: #f5f5f5;
+  padding: 10px;
+  border-radius: 7px;
+}
+
+.close_title_order{
+  display: none;
+}
 
 .fade-in { 
   animation: fadeIn 1s ease-in-out;
@@ -123,17 +182,22 @@ export default {
 
 .card_data > strong{
   font-size: 17px;
+  color: rgb(32, 3, 56);;
 }
 
 .card_data > span{
   font-size: 15px;
+  color: rgb(32, 3, 56);
 }
 
 .card_buttons{
+  position: relative;
   display: flex;
   flex-direction: row;
   gap: 20px;
   padding-top: 10px;
+  padding-right: 20px;
+  justify-content: flex-end;
 }
 
 @media (width < 680px){
@@ -153,28 +217,6 @@ export default {
 
   .card_data > span{
     font-size: 13px;
-  }
-
-  .card_buttons > .button_list_custom{
-    width: 100px;
-    height: 30px;
-    font-size: 12px;
-    padding: 0 5px;
-  }
-}
-
-@media (width < 330px){
-  .card_buttons{
-    display: flex;
-    flex-direction: column;
-  }
-
-  .card_buttons > .button_list_custom{
-    width: 90%;
-    height: 30px;
-    font-size: 14px;
-    
-    margin: 0 auto;
   }
 }
 </style>
