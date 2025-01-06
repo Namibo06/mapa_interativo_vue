@@ -5,7 +5,7 @@
 <script>
 import { Loader } from '@googlemaps/js-api-loader';
 import { toRaw } from 'vue';
-import { orders } from '@/services/order';
+import { orders, deliverers } from '@/services/order';
 
 let loader;
 
@@ -26,13 +26,16 @@ export default {
   },
   data() {
     return {
+      orderName: '',
+      orderId: '',
       map: null,
       directionsService: null,
       markers: [], 
       polylines: [], 
       movementInterval: null, 
       destinationReached: false,
-      orders: orders
+      orders: orders,
+      deliverers: deliverers
     };
   },
   watch: {
@@ -58,7 +61,7 @@ export default {
     });
   },
   beforeUnmount() {
-    clearInterval(this.movementInterval);
+    //clearInterval(this.movementInterval);
   },
   methods: {
     async initMap() {
@@ -92,33 +95,45 @@ export default {
     drawRouteForDeliverer(deliverer, order) {
       this.clearMap();
 
-      this.addMarker(order.restaurantLocation, "R", 'restaurant', `restaurant-${order.id}`);
+      this.addMarker(order.customerLocation, order.customerName, 'customer', `customer-${order.id}`);
+      this.addMarker(deliverer.location, deliverer.name, 'deliverer', `deliverer-${order.id}`);
 
-      this.addMarker(order.restaurantLocation, "E", 'deliverer', `deliverer-${deliverer.id}`);
-      
-      this.addMarker(order.customerLocation, "C", 'customer', `customer-${order.id}`);
+      const customerLatLng = new google.maps.LatLng(order.customerLocation.lat, order.customerLocation.lng);
+      const delivererLatLng = new google.maps.LatLng(deliverer.location.lat, deliverer.location.lng);
+
+      const polyline = new google.maps.Polyline({
+        path: [customerLatLng, delivererLatLng],
+        geodesic: true,
+        strokeColor: deliverer.color, 
+        strokeOpacity: 1.0,
+        strokeWeight: 2,
+      });
+
+      polyline.setMap(this.map);
+
+      this.polylines.push(polyline);
 
       const request = {
         origin: order.restaurantLocation,
         destination: order.customerLocation,
         waypoints: [],
-        travelMode: google.maps.TravelMode.DRIVING
+        travelMode: google.maps.TravelMode.DRIVING,
       };
 
-      // Solicitar rota ao DirectionsService
       this.directionsService.route(request, (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
           const directionsRenderer = new google.maps.DirectionsRenderer({
             map: this.map,
             suppressMarkers: true,
+            polylineOptions: {
+              strokeColor: deliverer.color, 
+              strokeOpacity: 1.0,
+              strokeWeight: 2,
+            },
           });
 
           directionsRenderer.setDirections(result);
-
-          this.polylines.push(directionsRenderer);
-
-          const route = result.routes[0].overview_path;
-          this.moveDelivererAlongPath(deliverer, route);
+          this.polylines.push(directionsRenderer.polyline);
         } else {
           console.error("Não foi possível calcular a rota:", status);
         }
@@ -135,7 +150,7 @@ export default {
       const icons = { 
         deliverer: { 
           path: google.maps.SymbolPath.CIRCLE,
-          fillColor: 'white',
+          fillColor: '#fff',
           fillOpacity: 1,
           scale: 8,
           strokeColor: 'black',
@@ -157,23 +172,109 @@ export default {
         icon: icons[type] || icons.deliverer
       });
 
+      if(type === "customer"){
+        const infowindow = new google.maps.InfoWindow({ 
+          content: `
+            <div>
+              <strong>Nome:</strong>
+              ${title}<br>
+              <strong>ID:</strong> 
+              ${this.getNumbers(id)}
+            </div>` 
+        }); 
+
+        marker.addListener('click', () => { 
+          infowindow.open({ 
+            anchor: marker,
+            map: this.map, 
+            shouldFocus: false 
+          }); 
+        }); 
+      }
+
       this.markers.push({ id, marker });
     },
 
+    getNumbers(stringValue){
+      return stringValue.replace(/\D/g, '');
+    },
+
     addAllOrdersToMap() {
+      this.clearMap();
+
       this.orders.forEach(order => {
-        this.addMarker(order.customerLocation, "C", "customer", `customer-${order.id}`);
+        this.addMarker(order.customerLocation, order.customerName, "customer", `customer-${order.id}`);
+      });
+
+      this.deliverers.forEach(deliverer => {
+        this.addMarker(deliverer.currentLocation, deliverer.name, "deliverer", `deliverer-${deliverer.id}`);
+      });
+
+      this.orders.forEach(order => {
+        this.deliverers.forEach(deliverer => {
+          const request = {
+            origin: deliverer.currentLocation,
+            destination: order.customerLocation,
+            travelMode: google.maps.TravelMode.DRIVING
+          };
+
+          this.directionsService.route(request, (result, status) => {
+            if (status === google.maps.DirectionsStatus.OK) {
+              const directionsRenderer = new google.maps.DirectionsRenderer({
+                map: this.map,
+                suppressMarkers: true,
+              });
+
+              directionsRenderer.setDirections(result);
+              this.polylines.push(directionsRenderer);
+            } else {
+              console.error("Não foi possível calcular a rota:", status);
+            }
+          });
+        });
       });
     },
 
-    addAllOrdersForDeliverer(deliverer) { 
+    async addAllOrdersForDeliverer(deliverer) {
       this.clearMap(); 
-      const delivererOrders = this.orders.filter(order => order.deliveryId === deliverer.id); 
+      
+      const delivererOrders = this.orders.filter(order => order.deliveryId === deliverer.id);
 
-      delivererOrders.forEach(order => { 
-        this.addMarker(order.restaurantLocation, "R", "restaurant", `restaurant-${order.id}`); 
-        this.addMarker(order.customerLocation, "C", "customer", `customer-${order.id}`); 
-      }); 
+      delivererOrders.forEach(order => {
+        this.addMarker(order.customerLocation, "C", "customer", `customer-${order.id}`);
+        this.addMarker(deliverer.currentLocation, "E", "deliverer", `deliverer-${order.id}`);
+
+        const request = {
+          origin: deliverer.currentLocation,
+          destination: order.customerLocation,
+          travelMode: google.maps.TravelMode.DRIVING
+        };
+
+        this.directionsService.route(request, (result, status) => {
+          if (status === google.maps.DirectionsStatus.OK) {
+            const directionsRenderer = new google.maps.DirectionsRenderer({
+              map: this.map,
+              suppressMarkers: true,
+            });
+
+            directionsRenderer.setDirections(result);
+
+            this.polylines.push(directionsRenderer);
+          } else {
+            console.error("Não foi possível calcular a rota:", status);
+          }
+        });
+      });
+    },
+
+    searchOrdersWithoutPerson(){
+      this.clearMap();
+
+      const ordersWithoutPerson = this.orders.filter(order => order.deliveryId === null);
+
+      ordersWithoutPerson.forEach(order => {
+        this.addMarker(order.customerLocation, "C", "customer", `customer-${order.id}`);
+      });
     },
 
     clearPolylines() { 
@@ -191,7 +292,7 @@ export default {
     }, 
     
     clearMap() { 
-      clearInterval(this.movementInterval); 
+      //clearInterval(this.movementInterval); 
       this.clearPolylines(); 
       this.clearMarkers(); 
       this.destinationReached = false; 
@@ -207,7 +308,7 @@ export default {
       }
     },
 
-    moveDelivererAlongPath(deliverer, route) {
+    /*moveDelivererAlongPath(deliverer, route) {
       const timePerStep = 1000;
       const delivererMarker = this.markers.find(marker => marker.id === `deliverer-${deliverer.id}`)?.marker;
 
@@ -251,37 +352,16 @@ export default {
       };
 
       this.movementInterval = setInterval(moveDeliverer, timePerStep);
-    }
+    }*/
   }
 };
 </script>
 
 <style scoped>
-#map {
-  border-radius: 10px; 
-  height: 500px; 
-  width: 700px; 
-  max-width: 97%; 
+#map { 
+  height: 100vh; 
+  width: 100%;  
   z-index: 0; 
-  position: relative;
-  top: -80px;
-  margin-right: 20px;
-}
-
-@media (width < 1000px) {
-  #map {
-    top: 0;
-    width: 80%;
-    height: 300px;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-top: 40px;
-  }
-}
-
-@media (width < 640px) {
-  #map {
-    width: 90%;
-  }
+  transition: opacity display 0.3s ease-in-out;
 }
 </style>
