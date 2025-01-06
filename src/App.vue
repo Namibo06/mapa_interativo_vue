@@ -1,56 +1,48 @@
 <template>
-  <div class="container-fluid">
+  <div>
     <main>
-      <div class="filters">
-        <h3>Filtros:</h3>
-
-        <div class="filter_wrapers">
-          <div class="form-check filter_single" v-for="courier in deliverers" :key="courier.name">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              :checked="selectedCouriers.includes(courier.name)"
-              @change="toggleCourierInSearch(courier.name)" 
-              @click="mapDeliverers(courier)"
-            />
-            <label class="form-check-label"> {{ courier.name }} </label>
-          </div>
-
-          <b-button variant="danger"
-            @click="clearMapWithMarkersAndPolylines"
-            class="clear_map"
-          >
-            Limpar Mapa
-          </b-button>  
-        </div><!--filter_wrapers-->
-      </div><!--filters-->
 
       <div class="couriers_map">
-        <EntregadoresList 
+        <!--<EntregadoresList 
           :deliverers="deliverers" 
           :selectedCouriers="selectedCouriers"
           @showRouteOnMap="handleShowRouteOnMap"
-        />
+        />-->
 
-        <Map 
+        <div class="card_couriers">
+            <button type="button" @click="getAllOrdersAndDeliverers">Todos</button>
+            <button type="button" @click="getAllOrdersWithoutPerson">Sem entregador</button>
+          <div class="couriers_options" v-for="courier in deliverers" :key="courier.name">
+            <button type="button"
+              :checked="selectedCouriers.includes(courier.name)"
+              @click="mapDeliverers(courier)"
+            >
+            
+              {{ courier.name }}
+            </button>
+          </div>
+        </div><!--card_couriers-->
+
+        <Map
           ref="map"
           :selectedDeliverer="selectedDeliverer" 
           :order="selectedOrder" 
           :updateMapDeliverers="updateMapDeliverers"
         />
       </div><!--couriers_map-->
+
     </main>
   </div>
 </template>
 
 <script>
-import EntregadoresList from '@/components/EntregadoresList.vue';
+//import EntregadoresList from '@/components/EntregadoresList.vue';
 import Map from '@/components/MapComponent.vue';
 import { deliverers } from '@/services/order';
 
 export default {
   components: {
-    EntregadoresList,
+    //EntregadoresList,
     Map
   },
   data() {
@@ -60,7 +52,10 @@ export default {
       selectedOrder: null,
       updateMapDeliverers: null,
       showMap: false,
-      selectedCouriers: []
+      selectedCouriers: [],
+      status_ped: 'not_accepted',
+      status_novo: 'not_accepted',
+      status_mapa: 'not_accepted',
     };
   },
   methods: {
@@ -101,6 +96,14 @@ export default {
         }); 
       } 
     },
+
+    getAllOrdersAndDeliverers(){
+      this.$refs.map.addAllOrdersToMap();
+    },
+
+    getAllOrdersWithoutPerson(){
+      this.$refs.map.searchOrdersWithoutPerson();
+    }
   },
 };
 </script>
@@ -117,9 +120,88 @@ export default {
   }
 
   main{
-    padding-top: 40px;
     display: var(--display-flex);
+    flex-direction: row;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .select_options_render{
+    position: absolute;
+    top: 100px;
+    left: 150px;
+  }
+
+  .form-check{
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    margin-right: 20px;
+  }
+
+  .form-check > input{
+    margin-left: 0em !important;
+  }
+
+  .form-check > label{
+    margin-right: 10px !important;
+  }
+
+  .card_couriers {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    z-index: 999;
+    height: auto;
+    overflow-y: auto;
+    max-height: 300px;
+    background-color: #FFFFFF;  
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
+    padding: 20px;
+    width: 250px; 
+  }
+
+  .card_couriers button {
+    background-color: #F44336;  
+    color: #FFFFFF;
+    border: none;
+    padding: 10px 15px;
+    margin: 5px 0;
+    width: 100%;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+
+  .card_couriers button:hover {
+    background-color: #D32F2F; 
+  }
+
+  .card_couriers button.selected {
+    background-color: #1976D2;  
+  }
+
+  .couriers_options,.card_couriers{
+    display: flex;
     flex-direction: column;
+  }
+
+  .card_couriers > button,.couriers_options > button{
+    padding: 8px 0 8px 50px;
+    border: 0;
+    background-color: #8209a7; 
+    color: #f5f5f5;  
+    text-align: left;
+  }
+
+  .couriers_options button:hover {
+    background-color: #FF9800;  
+  }
+
+  .couriers_options button.selected {
+    background-color: #1976D2; 
+    color: #FFFFFF;  
   }
 
   .filters{
@@ -138,6 +220,10 @@ export default {
   .filter_wrapers,main > .couriers_map{
     display: var(--display-flex);
     flex-direction: row;
+    position: relative;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .filter_single{
