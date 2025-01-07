@@ -16,14 +16,28 @@
               <button 
                 type="button"
                 @click="mapDeliverers(courier)"  
+                :class="selectedCouriersState[courier.id] ? 'ball_custom_card_active' : 'ball_custom_card'"
+                :style="
+                'background-color:'+
+                  [
+                    selectedCouriersState[courier.id] ?
+                    courier.color :
+                    '#ffffff'
+                  ] + ';'+
+                  'color:'+ 
+                  [
+                    selectedCouriersState[courier.id] ?
+                    '#ffffff' :
+                    '#000000'
+                  ]
+                "
               >
-                <div class="card_custom_option"
+                <div class="card_custom_option" 
+                  v-show="!selectedCouriersState[courier.id]"
                   :style="'background-color:'+ [courier.color] + ';'"></div><!--card_custom_option-->
 
                 <span>{{ courier.name }}</span>
               </button>
-
-              <div id="[courier.id]" :class="selectedCouriersState[courier.id] ? 'ball_custom_card_active' : 'ball_custom_card'"></div>
             </div>
 
         </div><!--card_couriers-->
@@ -107,7 +121,8 @@ export default {
     },
 
     getAllOrdersAndDeliverers(){
-      //this.selectedMultipleCouriers = [];
+      this.selectedCouriers = []; 
+      this.selectedCouriersState = {}
       this.$refs.map.addAllOrdersToMap();
     },
 
@@ -131,8 +146,6 @@ export default {
 
       this.$refs.map.addAllOrdersForDeliverers(this.selectedMultipleCouriers);
     }
-
-
   },
 };
 </script>
@@ -212,7 +225,7 @@ export default {
   }
 
   .card_couriers > button,.couriers_options > button{
-    padding: 8px 0 8px 30px;
+    padding: 10px 0 10px 30px;
     border: 0;
     background-color: #8209a7; 
     color: #f5f5f5;  
@@ -220,16 +233,12 @@ export default {
     display: flex;
     flex-direction: row;
     align-items: center;
+    height: 40px;
+    transition: box-shadow display opacity 0.2s ease-in-out;
   }
 
-  .couriers_options button:hover {
-    background-color: #FF9800;  
-  }
-
-  .couriers_options button.selected {
-    background-color: red; 
-    color: #FFFFFF;  
-    font-size: 32px;
+  .couriers_options > button:hover {
+    box-shadow: 2px 2px 3px 3px rgba(0,0,0,0.1);  
   }
 
   .ball_custom_card{
