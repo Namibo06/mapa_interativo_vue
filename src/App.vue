@@ -12,22 +12,28 @@
         <div class="card_couriers">
             <button type="button" @click="getAllOrdersAndDeliverers">Todos</button>
             <button type="button" @click="getAllOrdersWithoutPerson">Sem entregador</button>
-          <div class="couriers_options" v-for="courier in deliverers" :key="courier.name">
-            <button type="button"
-              :checked="selectedCouriers.includes(courier.name)"
-              @click="mapDeliverers(courier)"
-            >
-            
-              {{ courier.name }}
-            </button>
-          </div>
+            <div class="couriers_options" v-for="courier in deliverers" :key="courier.name">
+              <button 
+                type="button"
+                @click="mapDeliverers(courier)"  
+              >
+                <div class="card_custom_option"
+                  :style="'background-color:'+ [courier.color] + ';'"></div><!--card_custom_option-->
+
+                <span>{{ courier.name }}</span>
+              </button>
+
+              <div id="[courier.id]" :class="selectedCouriersState[courier.id] ? 'ball_custom_card_active' : 'ball_custom_card'"></div>
+            </div>
+
         </div><!--card_couriers-->
 
         <Map
           ref="map"
           :selectedDeliverer="selectedDeliverer" 
           :order="selectedOrder" 
-          :updateMapDeliverers="updateMapDeliverers"
+          :selectedMultipleCouriers="selectedMultipleCouriers"
+          
         />
       </div><!--couriers_map-->
 
@@ -53,9 +59,8 @@ export default {
       updateMapDeliverers: null,
       showMap: false,
       selectedCouriers: [],
-      status_ped: 'not_accepted',
-      status_novo: 'not_accepted',
-      status_mapa: 'not_accepted',
+      selectedMultipleCouriers: [],
+      selectedCouriersState: {},
     };
   },
   methods: {
@@ -71,16 +76,20 @@ export default {
       } else {
         this.selectedCouriers.splice(index, 1);
       }
-      this.updateMapAccordingToSelection();
+      this.selectCourierMap();
     },
 
     clearMapWithMarkersAndPolylines(){
       this.$refs.map.clearMap();
     },
 
-    mapDeliverers(deliverer){
+    mapDeliverers(deliverer) {
+      this.selectedCouriersState[deliverer.id] = !this.selectedCouriersState[deliverer.id];
+
       this.updateMapDeliverers = deliverer;
+      this.selectCourierMap(deliverer.name, deliverer.id, deliverer.currentLocation, deliverer.color, this.selectedCouriersState[deliverer.id]);
     },
+
 
     updateMapAccordingToSelection() { 
       this.clearMapWithMarkersAndPolylines();
@@ -91,24 +100,45 @@ export default {
         this.selectedCouriers.forEach(courier => { 
           const deliverer = this.deliverers.find(d => d.name === courier); 
           if (deliverer) { 
-            this.$refs.map.addAllOrdersForDeliverer(deliverer); 
+            this.$refs.map.addAllOrdersForDeliverers(deliverer); 
           } 
         }); 
       } 
     },
 
     getAllOrdersAndDeliverers(){
+      //this.selectedMultipleCouriers = [];
       this.$refs.map.addAllOrdersToMap();
     },
 
     getAllOrdersWithoutPerson(){
+      //this.selectedMultipleCouriers = [];
       this.$refs.map.searchOrdersWithoutPerson();
+    },
+
+    selectCourierMap(courier, courierId, courierLocation, courierColor, courierSelectedCard) {
+      this.selectedCouriersState[courierId] = courierSelectedCard;
+
+      const courierKey = `${courier}.${courierId}.${courierLocation.lat}.${courierLocation.lng}.${courierColor}`;
+
+      const index = this.selectedMultipleCouriers.indexOf(courierKey);
+
+      if (index !== -1) {
+        this.selectedMultipleCouriers = this.selectedMultipleCouriers.filter(item => item !== courierKey);
+      } else {
+        this.selectedMultipleCouriers.push(courierKey);
+      }
+
+      this.$refs.map.addAllOrdersForDeliverers(this.selectedMultipleCouriers);
     }
+
+
   },
 };
 </script>
 
 <style>
+
   :root{
     --display-flex: flex;
     --width-height-checkbox: 20px;
@@ -159,6 +189,8 @@ export default {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
     padding: 20px;
     width: 250px; 
+    display: flex;
+    flex-direction: column;
   }
 
   .card_couriers button {
@@ -174,25 +206,20 @@ export default {
     transition: background-color 0.3s ease;
   }
 
-  .card_couriers button:hover {
-    background-color: #D32F2F; 
-  }
-
-  .card_couriers button.selected {
-    background-color: #1976D2;  
-  }
-
-  .couriers_options,.card_couriers{
+  .card_couriers{
     display: flex;
     flex-direction: column;
   }
 
   .card_couriers > button,.couriers_options > button{
-    padding: 8px 0 8px 50px;
+    padding: 8px 0 8px 30px;
     border: 0;
     background-color: #8209a7; 
     color: #f5f5f5;  
     text-align: left;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
   }
 
   .couriers_options button:hover {
@@ -200,8 +227,39 @@ export default {
   }
 
   .couriers_options button.selected {
-    background-color: #1976D2; 
+    background-color: red; 
     color: #FFFFFF;  
+    font-size: 32px;
+  }
+
+  .ball_custom_card{
+    width: 9px;
+    height: 8px;
+    background-color: #cac3c3;
+    border-radius: 60%;
+    margin-left: 5px;
+  }
+
+  .ball_custom_card_active{
+    width: 9px;
+    height: 8px;
+    border-radius: 60%;
+    margin-left: 5px;
+    background-color: #8209a7;
+  }
+
+  .couriers_options{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card_custom_option{
+    width: 25px;
+    height: 4px;
+    border-radius: 5px;
+    margin-right: 10px;
   }
 
   .filters{
