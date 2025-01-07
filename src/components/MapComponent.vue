@@ -185,7 +185,7 @@ export default {
             <div>
               <strong>Nome:</strong>
               ${title}<br>
-              <strong>ID:</strong> 
+              <strong>N° Pedido:</strong> 
               ${this.getNumbers(id)}
             </div>` 
         }); 
@@ -206,29 +206,38 @@ export default {
       return stringValue.replace(/\D/g, '');
     },
 
-    async addAllOrdersToMap() {
+    /*async*/ addAllOrdersToMap() {
       this.clearMap();  
-
-      this.orders.forEach(order => {
-        this.addMarker(order.customerLocation, order.customerName, "customer", `customer-${order.id}`);
-      });
-
-      this.deliverers.forEach(deliverer => {
-        this.addMarker(deliverer.currentLocation, deliverer.name, "deliverer", `deliverer-${deliverer.id}`);
-      });
-
-      for (const order of this.orders) {
-        if(order.id === 6 || order.id === 9){
-          continue;
-        }
+        
         for (const deliverer of this.deliverers) {
-          const request = {
-            origin: deliverer.currentLocation,
-            destination: order.customerLocation,
+          let latitude = parseFloat(deliverer.currentLocation.lat);
+          let longitude = parseFloat(deliverer.currentLocation.lng);
+          let latLngLiteral = { lat: latitude, lng: longitude }; 
+
+          const delivererOrders = this.orders.filter(order => { 
+            return order.deliveryId === deliverer.id; 
+          });
+
+          if (!delivererOrders || delivererOrders.length === 0) {
+            console.log('Id do entregador não encontrado');
+            continue; 
+          }
+
+          for(const orderCustom of delivererOrders){
+            if(orderCustom.deliveryId === null || orderCustom.deliveryId === ""){
+              continue;
+            }
+            
+            this.addMarker(orderCustom.customerLocation, orderCustom.customerName, "customer", `customer-${orderCustom.id}`);
+            this.addMarker(latLngLiteral, deliverer.name, "deliverer", `deliverer-${orderCustom.id}`);
+
+            const request = {
+            origin: latLngLiteral,
+            destination: orderCustom.customerLocation,
             travelMode: google.maps.TravelMode.DRIVING
           };
 
-          await this.directionsService.route(request, (result, status) => {
+          /*await*/ this.directionsService.route(request, (result, status) => {
             if (status === google.maps.DirectionsStatus.OK) {
               const directionsRenderer = new google.maps.DirectionsRenderer({
                 map: this.map,
@@ -248,7 +257,7 @@ export default {
               console.error("Não foi possível calcular a rota:", status);
             }
           });
-        }
+          } 
       }
     },
 
