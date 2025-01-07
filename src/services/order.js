@@ -11,7 +11,7 @@ export const orders = [
 ];
 
 export const deliverers = [
-    { id: 1, name: 'Jonathan', currentLocation: { lat: -12.2660, lng: -38.9660 }, color: '#FFFF00', selected: false },
+    { id: 1, name: 'Jonathan', currentLocation: { lat: -12.2660, lng: -38.9660 }, color: '#00FF00', selected: false },
     { id: 2, name: 'Maria', currentLocation: { lat: -12.2645, lng: -38.9645 }, color: '#000000', selected: false },
     { id: 3, name: 'Joca', currentLocation: { lat: -12.2100, lng: -38.9560 }, color: '#0000FF', selected: false },
     { id: 4, name: 'William', currentLocation: { lat: -12.1645, lng: -38.6645 }, color: '#FFA500', selected: false },
