@@ -11,6 +11,10 @@ let loader;
 
 export default {
   props: {
+    selectedMultipleCouriers: {
+      type: Array,
+      default: () => []
+    },
     selectedDeliverer: {
       type: Object,
       default: null
@@ -39,6 +43,9 @@ export default {
     };
   },
   watch: {
+    selectedMultipleCouriers(newValue){
+      this.addAllOrdersForDeliverers(newValue);
+    },
     selectedDeliverer(newValue) {
       if (this.order) {
         this.updateMap(newValue, this.order);
@@ -51,7 +58,7 @@ export default {
     },
     updateMapDeliverers(newValue){
       if(newValue){
-        this.addAllOrdersForDeliverer(newValue);
+        this.addAllOrdersForDeliverers(newValue);
       }
     }
   },
@@ -199,8 +206,8 @@ export default {
       return stringValue.replace(/\D/g, '');
     },
 
-    addAllOrdersToMap() {
-      this.clearMap();
+    async addAllOrdersToMap() {
+      this.clearMap();  
 
       this.orders.forEach(order => {
         this.addMarker(order.customerLocation, order.customerName, "customer", `customer-${order.id}`);
@@ -210,61 +217,95 @@ export default {
         this.addMarker(deliverer.currentLocation, deliverer.name, "deliverer", `deliverer-${deliverer.id}`);
       });
 
-      this.orders.forEach(order => {
-        this.deliverers.forEach(deliverer => {
+      for (const order of this.orders) {
+        if(order.id === 6 || order.id === 9){
+          continue;
+        }
+        for (const deliverer of this.deliverers) {
           const request = {
             origin: deliverer.currentLocation,
             destination: order.customerLocation,
             travelMode: google.maps.TravelMode.DRIVING
           };
 
-          this.directionsService.route(request, (result, status) => {
+          await this.directionsService.route(request, (result, status) => {
             if (status === google.maps.DirectionsStatus.OK) {
               const directionsRenderer = new google.maps.DirectionsRenderer({
                 map: this.map,
                 suppressMarkers: true,
+                //draggable: true,  
+                polylineOptions: {
+                  strokeColor: deliverer.color,  
+                  strokeOpacity: 1.0,
+                  strokeWeight: 4  
+                }
               });
 
               directionsRenderer.setDirections(result);
+
               this.polylines.push(directionsRenderer);
             } else {
               console.error("Não foi possível calcular a rota:", status);
             }
           });
-        });
-      });
+        }
+      }
     },
 
-    async addAllOrdersForDeliverer(deliverer) {
+    async addAllOrdersForDeliverers(deliverers) {
+      if (!Array.isArray(deliverers)) {
+        console.error("deliverers não é um array"); 
+        return; 
+      }
+
       this.clearMap(); 
-      
-      const delivererOrders = this.orders.filter(order => order.deliveryId === deliverer.id);
 
-      delivererOrders.forEach(order => {
-        this.addMarker(order.customerLocation, "C", "customer", `customer-${order.id}`);
-        this.addMarker(deliverer.currentLocation, "E", "deliverer", `deliverer-${order.id}`);
+      for (const deliverer of deliverers) {
+        let delivererArray = deliverer.split('.'); 
+        let latitude = parseFloat(delivererArray[2] + '.' + delivererArray[3]); 
+        let longitude = parseFloat(delivererArray[4] + '.' + delivererArray[5]); 
+        let delivererColor = delivererArray[6];
+        let latLngLiteral = { lat: latitude, lng: longitude }; 
 
-        const request = {
-          origin: deliverer.currentLocation,
-          destination: order.customerLocation,
-          travelMode: google.maps.TravelMode.DRIVING
-        };
-
-        this.directionsService.route(request, (result, status) => {
-          if (status === google.maps.DirectionsStatus.OK) {
-            const directionsRenderer = new google.maps.DirectionsRenderer({
-              map: this.map,
-              suppressMarkers: true,
-            });
-
-            directionsRenderer.setDirections(result);
-
-            this.polylines.push(directionsRenderer);
-          } else {
-            console.error("Não foi possível calcular a rota:", status);
-          }
+        const delivererOrders = this.orders.filter(order => { 
+          const deliveryIdString = String(order.deliveryId);
+          return deliveryIdString === delivererArray[1]; 
         });
-      });
+
+        if (!delivererOrders || delivererOrders.length === 0) {
+          console.log('Id do entregador não encontrado');
+          continue; 
+        }
+        for (const order of delivererOrders) {
+          this.addMarker(order.customerLocation, order.customerName, "customer", `customer-${order.id}`);
+          this.addMarker(latLngLiteral, deliverer.name, "deliverer", `deliverer-${order.id}`);
+
+          const request = {
+            origin: latLngLiteral, 
+            destination: order.customerLocation, 
+            travelMode: google.maps.TravelMode.DRIVING  
+          };
+
+          await this.directionsService.route(request, (result, status) => {
+            if (status === google.maps.DirectionsStatus.OK) {
+              const directionsRenderer = new google.maps.DirectionsRenderer({
+                map: this.map,
+                suppressMarkers: true,  
+                polylineOptions: {
+                  strokeColor: delivererColor, 
+                  strokeOpacity: 1.0,
+                  strokeWeight: 4 
+                }
+              });
+              directionsRenderer.setDirections(result);
+
+              this.polylines.push(directionsRenderer);
+            } else {
+              console.error("Não foi possível calcular a rota:", status);
+            }
+          });
+        }
+      }
     },
 
     searchOrdersWithoutPerson(){
@@ -279,9 +320,10 @@ export default {
 
     clearPolylines() { 
       this.polylines.forEach(polyline => polyline.setMap(null)); 
+      this.polylines.length = 0;
       this.polylines = []; 
     }, 
-    
+
     clearMarkers() { 
       this.markers.forEach(({ marker }) => {
         if (marker) {
@@ -307,52 +349,6 @@ export default {
         });
       }
     },
-
-    /*moveDelivererAlongPath(deliverer, route) {
-      const timePerStep = 1000;
-      const delivererMarker = this.markers.find(marker => marker.id === `deliverer-${deliverer.id}`)?.marker;
-
-      if (!delivererMarker) {
-        console.error("Marcador do entregador não encontrado!");
-        return;
-      }
-
-      let step = 0;
-      const moveDeliverer = () => {
-        if (step < route.length - 1) {
-          const currentPosition = {
-            lat: route[step].lat(),
-            lng: route[step].lng()
-          };
-          const nextPosition = {
-            lat: route[step + 1].lat(),
-            lng: route[step + 1].lng()
-          };
-
-          if (currentPosition && nextPosition) {
-            const interpolatedPosition = nextPosition;
-
-            delivererMarker.setPosition(interpolatedPosition);
-
-            if (
-              google.maps.geometry.spherical.computeDistanceBetween(interpolatedPosition, new google.maps.LatLng(nextPosition.lat, nextPosition.lng)) < 10
-            ) {
-              step++;
-            }
-          } else {
-            console.error("Pontos inválidos:", { currentPosition, nextPosition });
-          }
-        } else {
-          if (!this.destinationReached) {
-            console.log("Entregador chegou ao destino!");
-            this.destinationReached = true;
-          }
-          clearInterval(this.movementInterval); 
-        }
-      };
-
-      this.movementInterval = setInterval(moveDeliverer, timePerStep);
-    }*/
   }
 };
 </script>
