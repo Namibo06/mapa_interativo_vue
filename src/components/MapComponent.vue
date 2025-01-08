@@ -67,9 +67,6 @@ export default {
       this.addAllOrdersToMap();
     });
   },
-  beforeUnmount() {
-    //clearInterval(this.movementInterval);
-  },
   methods: {
     async initMap() {
       if (!loader) {
@@ -87,7 +84,7 @@ export default {
       }
 
       if (this.map) {
-        this.map = null; // Limpa a instância anterior
+        this.map = null;
       }
 
       this.map = new google.maps.Map(document.getElementById("map"), {
@@ -206,7 +203,7 @@ export default {
       return stringValue.replace(/\D/g, '');
     },
 
-    /*async*/ addAllOrdersToMap() {
+    addAllOrdersToMap() {
       this.clearMap();  
         
         for (const deliverer of this.deliverers) {
@@ -225,7 +222,6 @@ export default {
             return order.deliveryId === deliverer.id; 
           });
           
-
           for(const orderCustom of delivererOrders){
             this.addMarker(orderCustom.customerLocation, orderCustom.customerName, "customer", `customer-${orderCustom.id}`);
             this.addMarker(latLngLiteral, deliverer.name, "deliverer", `deliverer-${orderCustom.id}`);
@@ -236,12 +232,11 @@ export default {
             travelMode: google.maps.TravelMode.DRIVING
           };
 
-          /*await*/ this.directionsService.route(request, (result, status) => {
+          this.directionsService.route(request, (result, status) => {
             if (status === google.maps.DirectionsStatus.OK) {
               const directionsRenderer = new google.maps.DirectionsRenderer({
                 map: this.map,
-                suppressMarkers: true,
-                //draggable: true,  
+                suppressMarkers: true, 
                 polylineOptions: {
                   strokeColor: deliverer.color,  
                   strokeOpacity: 1.0,
@@ -260,7 +255,7 @@ export default {
       }
     },
 
-    async addAllOrdersForDeliverers(deliverers) {
+    addAllOrdersForDeliverers(deliverers) {
       if (!Array.isArray(deliverers)) {
         console.error("deliverers não é um array"); 
         return; 
@@ -294,7 +289,7 @@ export default {
             travelMode: google.maps.TravelMode.DRIVING  
           };
 
-          await this.directionsService.route(request, (result, status) => {
+          this.directionsService.route(request, (result, status) => {
             if (status === google.maps.DirectionsStatus.OK) {
               const directionsRenderer = new google.maps.DirectionsRenderer({
                 map: this.map,
@@ -316,15 +311,20 @@ export default {
       }
     },
 
-    searchOrdersWithoutPerson(){
+    /*searchOrdersWithoutPerson(){
       this.clearMap();
+      this.map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: -12.2666, lng: -38.9663 },
+        zoom: 10,
+        streetViewControl: true,
+      });
 
       const ordersWithoutPerson = this.orders.filter(order => order.deliveryId === null);
 
       ordersWithoutPerson.forEach(order => {
         this.addMarker(order.customerLocation, "C", "customer", `customer-${order.id}`);
       });
-    },
+    },*/
 
     clearPolylines() { 
       this.polylines.forEach(polyline => polyline.setMap(null)); 
@@ -341,8 +341,7 @@ export default {
       this.markers = []; 
     }, 
     
-    clearMap() { 
-      //clearInterval(this.movementInterval); 
+    clearMap() {  
       this.clearPolylines(); 
       this.clearMarkers(); 
       this.destinationReached = false; 
