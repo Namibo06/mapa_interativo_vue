@@ -12,11 +12,11 @@
 #### 2. Desenho de Rotas:
 - #### Traça rotas entre os pontos com base nas coordenadas fornecidas.
 
-#### 3. Simulação de Movimento:
-- #### Move um marcador (entregador) ao longo de uma rota traçada.
-
-#### 4. Limpeza do Mapa:
+#### 3. Limpeza do Mapa:
 - #### Remove marcadores e rotas anteriores para uma nova interação.
+
+#### 4. Filtros dinâmicos:
+- #### Renderiza marcadores, entregadores e rotas, com base na escolha dinâmica.
 
 ------------------------------
 
@@ -24,7 +24,13 @@
 
 - #### Vue.js: Framework JavaScript para construir a interface do usuário.
 
+- #### Node.js: Linguagem JavaScript que roda no lado do servidor.
+
+- #### NPM: Instalador e gerenciador de pacotes e dependências.
+
 - #### Google Maps API: Ferramenta para renderização de mapas e rotas.
+
+- #### PopperJs: É um motor de posicionamento que calcula a posição de um elemento até uma posição próxima de referência
 
 -------------------------------
 
@@ -34,20 +40,21 @@
 - #### Axios | ``npm install --save axios``
 - #### Google Maps | ``npm install --save @googlemaps/js-api-loader``
 - #### Eslint Plugin Vue | ``npm install --save-dev eslint eslint-plugin-vue vue-eslint-parser babel-eslint ``
+- #### PopperJs | ``npm i --save popperjs/core``
 
 -------------------------------
 
 ### Configuração do Ambiente
 
-#### 1. Certifique-se de ter Node.js e NPM instalado, caso não tenha, clique no link abaixo.
+#### 1. Certifique-se de ter Node.js na versão 12.9+ e NPM instalado, caso não tenha, clique no link abaixo.
 #### Clique [aqui](https://nodejs.org/en/download/prebuilt-installer/current) para fazer o download no site do NodeJS
 
 #### 1. Certifique-se de ter uma IDE instalada, como por exemplo o VsCode, caso não tenha, clique no link abaixo.
 #### Clique [aqui](https://code.visualstudio.com/Download) para fazer o download no site do VsCode
 
-#### 2. Certifique-se de ter a CLI do Vuejs instalado, caso não tenha, copie o link abaixo e cole no seu terminal.
+#### 2. Certifique-se de ter a CLI do Vuejs na versão 3.26 instalado, caso não tenha, copie o link abaixo e cole no seu terminal.
 ```javascript
-npm install -g @vue/cli
+npm i -g vue@3.2.26
 ```
 
 #### 3. Clone este repositório:
@@ -82,38 +89,8 @@ npm run serve
 #### 1. Carregamento do Mapa:
 - #### O mapa é carregado automaticamente ao iniciar a aplicação.
 
-#### 2. Adicionar Marcadores:
-- #### Utilize a função ``addMarker`` para inserir um marcador no mapa:
-```javascript
-addMarker({
-  position: { lat: -23.561684, lng: -46.625378 },
-  title: 'Exemplo',
-  type: 'restaurant',
-  id: 'marker-1'
-});
-```
-
-#### 3. Desenhar Rotas:
-#### Utilize a função ``drawRoute`` para criar uma rota:
-```javascript
-drawRoute({
-  origin: { lat: -23.561684, lng: -46.625378 },
-  destination: { lat: -23.562684, lng: -46.626378 },
-  waypoints: []
-});
-```
-
-#### 4. Simular Movimento do Entregador:
-#### Use ``moveDelivererAlongPath`` para simular o movimento:
-```javascript
-moveDelivererAlongPath(deliverer, path);
-```
-
-#### 5. Limpar o Mapa:
-#### Utilize clearMap para resetar o mapa:
-```javascript
-clearMap();
-```
+#### 2. Adicionar Filtros:
+- #### No lado superior direito, por padrão ele puxa todos os pedidos pendentes, basta clicar nas outras opções que são 'Sem entregador', e os demais motoristas, que poderá perceber as alterações dinâmicas.
 
 -------------------------
 
@@ -124,13 +101,11 @@ clearMap();
 
 - #### ``public/assets: Pasta de imagens para icones.``
 
-- #### ``src/components/EntregadoresListComponent.vue: Componente que gerencia e exibe os cards dos entregadores e seus pedidos pendentes.``
-
 - #### ``src/components/Map.vue: Componente principal que implementa o mapa interativo.``
 
 - #### ``src/services/order.js: Módulo que gerencia os dados dos pedidos e entregadores.``
 
-- #### ``src/App.vue: Componente principal que renderiza toda a aplicação.``
+- #### ``src/App.vue: Componente principal que renderiza toda a aplicação e lida com card de filtros.``
 
 - #### ``src/main.js:  Arquivo de entrada JavaScript que inicializa a aplicação Vue.``
 
