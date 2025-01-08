@@ -271,20 +271,7 @@ export default {
     margin-right: 10px;
   }
 
-  .filters{
-    width: 1050px;
-    max-width: 99%;
-    margin: 0 auto;
-  }
-
-  .filters > h3{
-    letter-spacing: 7%;
-    font-size: 27px;
-    font-weight: 400;
-    color: rgb(32, 3, 56);
-  }
-
-  .filter_wrapers,main > .couriers_map{
+  main > .couriers_map{
     display: var(--display-flex);
     flex-direction: row;
     position: relative;
@@ -293,138 +280,31 @@ export default {
     height: 100%;
   }
 
-  .filter_single{
-    margin-right: 15px;
-  }
+  @media (width < 580px){
+    .card_couriers {
+      top: 80px;
+      right: 15px;
+      height: 250px; 
+      padding: 15px;
+      width: 240px; 
+    }
 
-  .filter_single:last-child{
-    margin-right: 0;
-  }
-
-  .filter_single > input{
-    cursor: pointer;
-  }
-
-  label{
-    color: rgb(32, 3, 56);
-  }
-
-  .clear_map{
-    position: relative;
-    top: -5px;
-    left: var(--width-height-checkbox);
-    transition: top 0.2s ease-in;
-  }
-
-  .clear_map:active{
-    top: -3px;
-  }
-
-  @media (width < 1130px){
-    .filters{
-      width: auto;
-      max-width: auto;
-      padding-left: 30px;
-      margin: 0;
+    .card_couriers > button,.couriers_options > button{
+      height: 37px;
     }
   }
 
-  @media (width < 1000px) {
-    .filters{
-      padding-left: 85px;
+  @media (width < 390px){
+    .card_couriers {
+      top: 85px;
+      right: 12px;
+      height: 240px; 
+      padding: 14px;
+      width: 230px; 
     }
 
-    .filter_wrapers,main > .couriers_map{
-      display: flex;
-      flex-direction: column-reverse;
-    }
-
-    .filter_wrapers{
-      display: flex;
-      flex-direction: row;
-    }
-  }
-
-  @media (width < 700px) {
-    .filters{
-      padding-left: 65px;
-    }
-  }
-
-  @media (width < 640px) {
-    .filters{
-      padding-left: 30px;
-    }
-  }
-
-  @media (width < 540px) {
-    .filters{
-      padding-left: 25px;
-    }
-  }
-
-  @media (width < 420px) {
-    .filters{
-      padding-left: var(--width-height-checkbox);
-    }
-
-    .filter_wrapers{
-      display: flex;
-      flex-direction: column;
-    }
-
-    .filter_single:nth-child(1){
-      margin-top: 10px;
-    }
-
-    .filter_single > input{
-      cursor: pointer;
-    }
-
-    .filter_single > input{
-      margin-bottom: 8px;
-    }
-
-    .filter_single > input:last-child{
-      margin-bottom: 0;
-    }
-
-    .clear_map{
-      top: 10px;
-      left: -33%;
-      margin: 15px auto;
-    }
-
-    .clear_map:active{
-      top: 12px;
-    }
-  }
-
-  @media (width < 361px) {
-    input::placeholder{
-      font-size: 14px;
-    }
-
-    .filters{
-      padding-left: 15px;
-    }
-
-    .clear_map{
-      left: -29%;
-    }
-  }
-
-  @media (width < 290px) {
-    input::placeholder{
-      font-size: 12px;
-    }
-
-    .filters{
-      padding-left: 10px;
-    }
-
-    .clear_map{
-      left: -26%;
+    .card_couriers > button,.couriers_options > button{
+      height: 35px;
     }
   }
 </style>
