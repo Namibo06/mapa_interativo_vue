@@ -1,68 +1,55 @@
 <template>
-  <div>
-    <main>
+  <main>
+    <div class="couriers_map">
+      <div class="card_couriers">
+          <button type="button" @click="getAllOrdersAndDeliverers">Todos</button>
+          <div class="couriers_options" v-for="courier in deliverers" :key="courier.name">
+            <button 
+              type="button"
+              :id="courier.id"
+              @click="mapDeliverers(courier)"  
+              :class="selectedCouriersState[courier.id] ? 'ball_custom_card_active' : 'ball_custom_card'"
+              :style="
+              'background-color:'+
+                [
+                  selectedCouriersState[courier.id] ?
+                  courier.color :
+                  '#ffffff'
+                ] + ';'+
+                'color:'+ 
+                [
+                  selectedCouriersState[courier.id] ?
+                  '#ffffff' :
+                  '#000000'
+                ]
+              "
+            >
+              <div class="card_custom_option" 
+                v-show="!selectedCouriersState[courier.id]"
+                :style="'background-color:'+ [courier.color] + ';'"></div><!--card_custom_option-->
 
-      <div class="couriers_map">
-        <!--<EntregadoresList 
-          :deliverers="deliverers" 
-          :selectedCouriers="selectedCouriers"
-          @showRouteOnMap="handleShowRouteOnMap"
-        />-->
+              <span>{{ courier.name }}</span>
+            </button>
+          </div>
+      </div><!--card_couriers-->
 
-        <div class="card_couriers">
-            <button type="button" @click="getAllOrdersAndDeliverers">Todos</button>
-            <button type="button" @click="getAllOrdersWithoutPerson">Sem entregador</button>
-            <div class="couriers_options" v-for="courier in deliverers" :key="courier.name">
-              <button 
-                type="button"
-                @click="mapDeliverers(courier)"  
-                :class="selectedCouriersState[courier.id] ? 'ball_custom_card_active' : 'ball_custom_card'"
-                :style="
-                'background-color:'+
-                  [
-                    selectedCouriersState[courier.id] ?
-                    courier.color :
-                    '#ffffff'
-                  ] + ';'+
-                  'color:'+ 
-                  [
-                    selectedCouriersState[courier.id] ?
-                    '#ffffff' :
-                    '#000000'
-                  ]
-                "
-              >
-                <div class="card_custom_option" 
-                  v-show="!selectedCouriersState[courier.id]"
-                  :style="'background-color:'+ [courier.color] + ';'"></div><!--card_custom_option-->
-
-                <span>{{ courier.name }}</span>
-              </button>
-            </div>
-
-        </div><!--card_couriers-->
-
-        <Map
-          ref="map"
-          :selectedDeliverer="selectedDeliverer" 
-          :order="selectedOrder" 
-          :selectedMultipleCouriers="selectedMultipleCouriers"
-          
-        />
-      </div><!--couriers_map-->
-
-    </main>
-  </div>
+      <Map
+        ref="map"
+        :selectedDeliverer="selectedDeliverer" 
+        :order="selectedOrder" 
+        :selectedMultipleCouriers="selectedMultipleCouriers"
+        
+      />
+    </div><!--couriers_map-->
+  </main>
 </template>
 
 <script>
-//import EntregadoresList from '@/components/EntregadoresList.vue';
 import Map from '@/components/MapComponent.vue';
 import { deliverers } from '@/services/order';
 
 export default {
   components: {
-    //EntregadoresList,
     Map
   },
   data() {
@@ -71,18 +58,14 @@ export default {
       selectedDeliverer: null,
       selectedOrder: null,
       updateMapDeliverers: null,
-      showMap: false,
       selectedCouriers: [],
       selectedMultipleCouriers: [],
       selectedCouriersState: {},
+      clickInAll: false,
+      clickInWithoutCourier: false,
     };
   },
   methods: {
-    handleShowRouteOnMap(deliverer, order) {
-      this.selectedDeliverer = deliverer;
-      this.selectedOrder = order;
-      this.showMap = true;
-    },
     toggleCourierInSearch(courier) {
       const index = this.selectedCouriers.indexOf(courier);
       if (index === -1) {
@@ -100,9 +83,17 @@ export default {
     mapDeliverers(deliverer) {
       this.selectedCouriersState[deliverer.id] = !this.selectedCouriersState[deliverer.id];
 
-      this.updateMapDeliverers = deliverer;
-      this.selectCourierMap(deliverer.name, deliverer.id, deliverer.currentLocation, deliverer.color, this.selectedCouriersState[deliverer.id]);
+      if (this.selectedCouriersState[deliverer.id]) {
+        const courierKey = `${deliverer.name}.${deliverer.id}.${deliverer.currentLocation.lat}.${deliverer.currentLocation.lng}.${deliverer.color}`;
+        this.selectedMultipleCouriers.push(courierKey);
+      } else {
+        const courierKey = `${deliverer.name}.${deliverer.id}.${deliverer.currentLocation.lat}.${deliverer.currentLocation.lng}.${deliverer.color}`;
+        this.selectedMultipleCouriers = this.selectedMultipleCouriers.filter(item => item !== courierKey);
+      }
+
+      this.$refs.map.addAllOrdersForDeliverers(this.selectedMultipleCouriers);
     },
+
 
 
     updateMapAccordingToSelection() { 
@@ -121,13 +112,16 @@ export default {
     },
 
     getAllOrdersAndDeliverers(){
-      this.selectedCouriers = []; 
-      this.selectedCouriersState = {}
+      this.selectedCouriers = [];  
+      this.clickInAll = true;
+      this.selectedCouriersState = {};
       this.$refs.map.addAllOrdersToMap();
     },
 
     getAllOrdersWithoutPerson(){
-      //this.selectedMultipleCouriers = [];
+      this.selectedCouriers = []; 
+      this.clickInWithoutCourier = true;
+      this.selectedCouriersState = {};
       this.$refs.map.searchOrdersWithoutPerson();
     },
 
@@ -138,14 +132,33 @@ export default {
 
       const index = this.selectedMultipleCouriers.indexOf(courierKey);
 
-      if (index !== -1) {
-        this.selectedMultipleCouriers = this.selectedMultipleCouriers.filter(item => item !== courierKey);
+      if (this.clickInAll === false && this.clickInWithoutCourier === false) {
+        if (index === -1) {
+          this.selectedMultipleCouriers.push(courierKey);
+        }
       } else {
-        this.selectedMultipleCouriers.push(courierKey);
+        if (index !== -1) {
+
+          this.selectedCouriers = [];
+          this.selectedMultipleCouriers = this.selectedMultipleCouriers.filter(item => {
+            item !== courierKey
+          });
+          this.clickInAll = false;
+          this.clickInWithoutCourier = false;
+
+          /*verificar a classe do botão em especifico, senão quando apertar no botão ele continua ativo*/
+
+          this.selectedMultipleCouriers.push(courierKey);
+        } else {
+          
+          this.selectedMultipleCouriers.push(courierKey);
+        }
       }
 
+      console.log('chamando mapa para entregador especifico');
       this.$refs.map.addAllOrdersForDeliverers(this.selectedMultipleCouriers);
     }
+
   },
 };
 </script>
