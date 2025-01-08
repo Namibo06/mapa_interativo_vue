@@ -215,19 +215,18 @@ export default {
           let latLngLiteral = { lat: latitude, lng: longitude }; 
 
           const delivererOrders = this.orders.filter(order => { 
+            if (!order.deliveryId || order.deliveryId.length === 0) {
+             
+              orders.forEach(order => {
+                this.addMarker(order.customerLocation, "C", "customer", `customer-${order.id}`);
+              });
+            }
+
             return order.deliveryId === deliverer.id; 
           });
-
-          if (!delivererOrders || delivererOrders.length === 0) {
-            console.log('Id do entregador não encontrado');
-            continue; 
-          }
+          
 
           for(const orderCustom of delivererOrders){
-            if(orderCustom.deliveryId === null || orderCustom.deliveryId === ""){
-              continue;
-            }
-            
             this.addMarker(orderCustom.customerLocation, orderCustom.customerName, "customer", `customer-${orderCustom.id}`);
             this.addMarker(latLngLiteral, deliverer.name, "deliverer", `deliverer-${orderCustom.id}`);
 
