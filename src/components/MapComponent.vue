@@ -181,6 +181,37 @@ export default {
     },
 
     async updateOrderDetails(updatedOrder) {
+      if(
+        updatedOrder.idPedido === "" || updatedOrder.idPedido === null || updatedOrder.idPedido === undefined ||
+        updatedOrder.clienteName === "" || updatedOrder.clienteName === null || updatedOrder.clienteName === undefined ||
+        updatedOrder.cidade === "" || updatedOrder.cidade === null || updatedOrder.cidade === undefined ||
+        updatedOrder.cep === "" || updatedOrder.cep === null || updatedOrder.cep === undefined ||
+        updatedOrder.valorEntrega === "" || updatedOrder.valorEntrega === null || updatedOrder.valorEntrega === undefined ||
+        updatedOrder.dataHoraEntrega === "" || updatedOrder.dataHoraEntrega === null || updatedOrder.dataHoraEntrega === undefined 
+      ){
+        console.log('Dados obrigatórios nulos, vazios ou indefinidos');
+        return;
+      }
+
+      if(updatedOrder.clienteName.length < 4 || updatedOrder.clienteName.length > 30){
+        console.log('Nome deve estar entre 4 a 30 caracteres');
+        return;
+      }
+
+      if(
+        updatedOrder.logradouro === undefined || 
+        updatedOrder.numeroCasa === undefined || 
+        updatedOrder.bairro === undefined ||
+        updatedOrder.pontoReferencia === undefined || 
+        updatedOrder.numeroCasa === undefined 
+      ){
+        updatedOrder.logradouro = "";
+        updatedOrder.numeroCasa = "";
+        updatedOrder.bairro = "";
+        updatedOrder.pontoReferencia = ""; 
+        updatedOrder.numeroCasa = "";
+      }
+
       const orderIndex = this.pedidoArrayMerge.findIndex(pedido => {
         return pedido.ped_numero === updatedOrder.idPedido;
       });
