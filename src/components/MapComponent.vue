@@ -53,7 +53,10 @@ export default {
       arrayPedidosEtregador: [],
       pedidos: pedidos,
       arraySelectedEntregador: [],
-      addPolylines: {}
+      addPolylines: {},
+      pedidoProducaoArray: [],
+      pedidoSaiuEntregaArray: [], 
+      pedidoRecebidosArray: []
     };
   },
   watch: {
@@ -119,16 +122,14 @@ export default {
 
       this.pedidoProducaoArray = this.pedidos.producao;
       this.pedidoSaiuEntregaArray = this.pedidos.saiuentrega;
-      this.pedidoEntregueArray = this.pedidos.entregue;
-      this.pedidoArrayMerge = this.pedidoProducaoArray.concat(this.pedidoSaiuEntregaArray,this.pedidoEntregueArray);
+      this.pedidoRecebidosArray = this.pedidos.recebidos;
+      this.pedidoArrayMerge = this.pedidoProducaoArray.concat(this.pedidoSaiuEntregaArray,this.pedidoRecebidosArray);
 
       this.directionsService = new google.maps.DirectionsService();
     },
 
     finalizarEntrega(idPedido) {
       const orderIndex = this.pedidoArrayMerge.findIndex(pedido => {
-        console.log(pedido);
-        console.log(pedido.ped_numero + ' === ' + idPedido);
         return pedido.ped_numero === idPedido;
       });
 
@@ -149,12 +150,9 @@ export default {
             this.polylines.splice(index, 1);
           }
         });
-
         this.pedidoArrayMerge[orderIndex] = pedidoRemovido;
 
         this.updateMap();
-
-        console.log(`Pedido com id ${idPedido} foi marcado como não entregue e removido do mapa.`);
       } else {
         console.log(`Pedido com id ${idPedido} não encontrado.`);
       }
@@ -233,7 +231,6 @@ export default {
     },
 
     generateRandomColorForDeliverer(deliverer) {
-      console.log(deliverer);
       if (!deliverer.color) {
         deliverer.color = this.generateRandomColor();
       }
@@ -301,12 +298,10 @@ export default {
     },
 
     updateDateTime(datetime){
-      console.log(datetime);
       const dataArray = datetime.split(' ');
       const data = dataArray[0].split('-');
       const horario = dataArray[1];
       const dateFormatted = data[2] + "/" + data[1] + "/" + data[0] + " " + horario;
-      console.log(dateFormatted);
       return dateFormatted;
     },
 

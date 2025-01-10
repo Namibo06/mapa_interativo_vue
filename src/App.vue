@@ -49,6 +49,7 @@ import Map from '@/components/MapComponent.vue';
 import { pedidos } from '@/services/order';
 import TesteAtualizacao from './components/TesteAtualizacao.vue';
 
+/**colocar em um arquivo e somente puxar quando componente for criado */
 const fixedColors = [
   '#FF0000', '#00FF00', '#0000FF', '#FF4500', '#00008B', '#008000', '#FFD700', '#FF1493', '#32CD32', 
   '#FF6347', '#4682B4', '#FF69B4', '#20B2AA', '#9932CC', '#FF8C00', '#7CFC00', '#9400D3', '#FF00FF', 
@@ -80,7 +81,7 @@ export default {
       arrayPedidosMerge: [],
       pedidoProducaoArray: [],
       pedidoSaiuEntregaArray: [],
-      pedidoEntregueArray: [],
+      pedidoRecebidosArray: [],
       usedColors: [],
       arrayPedidosMergeFacility: [],
       processedEntregador: null,
@@ -118,7 +119,7 @@ export default {
         return false; 
       };
 
-      const pedidoKeys = ['entregue', 'producao', 'saiuentrega'];
+      const pedidoKeys = ['recebidos', 'producao', 'saiuentrega'];
       let updated = false;
 
       for (const key of pedidoKeys) {
@@ -156,7 +157,7 @@ export default {
           } else { 
             const entregadorId = pedido.entregador.entregador_id; 
             if (!courierColorsMap[entregadorId]) { 
-              courierColorsMap[entregadorId] = fixedColors[colorIndex]; 
+              courierColorsMap[entregadorId] = fixedColors[colorIndex];
               colorIndex = (colorIndex + 1) % fixedColors.length; 
             } 
             pedido.entregador.color = courierColorsMap[entregadorId]; 
@@ -172,7 +173,6 @@ export default {
         courier.entregador.ent_nome === "sem Entregador" ||
         courier.entregador.ent_nome === "sem entregador"
       ) {
-        console.log('aqui tem sem entregador');
         courier.entregador.color = "#808080";
       }
 
@@ -180,51 +180,37 @@ export default {
     },
 
     getAllData(){
-        this.pedidoProducaoArray = this.pedidos.producao;
-        this.pedidoSaiuEntregaArray = this.pedidos.saiuentrega;
-        this.pedidoEntregueArray = this.pedidos.entregue;
+      this.pedidoProducaoArray = this.pedidos.producao || [];
+      this.pedidoSaiuEntregaArray = this.pedidos.saiuentrega || [];
+      this.pedidoRecebidosArray = this.pedidos.recebidos || [];
 
-        this.arrayPedidosMerge = [];
-        /**verificar se pedidoProducaoArray e os demais é undefined */
+      this.arrayPedidosMerge = [];
+      this.processedEntregador = new Set();
 
-        this.pedidoProducaoArray.forEach(pedido => {
-          const keyEntregador = `${pedido.entregador.entregador_id}`;
-          this.processedEntregador = new Set();
+      const addPedidosComEntrega = (pedidoArray) => {
+          pedidoArray.forEach(pedido => {
+              if(pedido.ped_entrega !== "S") {
+                  return;
+              }
 
-          if(this.processedEntregador.has(keyEntregador)){
-            return;
-          }
-          this.processedEntregador.add(keyEntregador);
+              const keyEntregador = `${pedido.entregador.entregador_id}`;
 
-          this.processedEntregador.forEach(entregador => {
+              if(this.processedEntregador.has(keyEntregador)){
+                  return;
+              }
+              this.processedEntregador.add(keyEntregador);
 
-            if(parseInt(keyEntregador) !== parseInt(entregador)){
-              console.log('nao é o mesmo');
-              return;
-            }else{
               this.arrayPedidosMerge.push(pedido);
-            }
           });
-        });
+      };
 
-        this.pedidoSaiuEntregaArray.forEach(pedido => {
-          const keyEntregador = `${pedido.entregador.entregador_id}`;
+      addPedidosComEntrega(this.pedidoProducaoArray);
+      addPedidosComEntrega(this.pedidoSaiuEntregaArray);
+      addPedidosComEntrega(this.pedidoRecebidosArray);
 
-          if(this.processedEntregador.has(keyEntregador)){
-            return;
-          }
-          this.processedEntregador.add(keyEntregador);
-
-          this.processedEntregador.forEach(entregador => {
-            if(parseInt(keyEntregador) !== parseInt(entregador)){
-              console.log('nao é o mesmo');
-              return;
-            }else{
-              this.arrayPedidosMerge.push(pedido);
-            }
-          });
-        });
+      this.setDeliverersColors();  
     },
+
 
     handleShowRouteOnMap(courier, order) {
       this.selectedDeliverer = courier;
@@ -278,7 +264,7 @@ export default {
     },
 
     selectCourierMap(courierName, courierId, courierLocation, courierSelectedCard, courierColor) {
-      console.log(courierName);
+      console.log(courierName + ":"+ courierColor);
       if ( 
         courierName === "Sem Entregador" || 
         courierName === "Sem entregador" || 
@@ -288,7 +274,6 @@ export default {
           courierColor = "#808080"; 
         } 
 
-      console.log(courierColor);
       this.selectedCouriersState[courierId] = courierSelectedCard;
 
       const courierKey = `${courierName}.${courierId}.${courierLocation.lat}.${courierLocation.lng}.${courierColor}`;
@@ -302,7 +287,7 @@ export default {
         this.validationEntregador.push(courierKeyValidation);
         this.selectedMultipleCouriers.push(courierKey);
       }
-      
+      console.log(courierName + ":"+ courierColor);
       this.$refs.map.addAllOrdersForDeliverers(this.validationEntregador, courierColor);
     },
 
