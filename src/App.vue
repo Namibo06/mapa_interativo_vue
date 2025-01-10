@@ -311,10 +311,6 @@ export default {
       this.selectedCouriersState = {};
       this.$refs.map.addAllOrdersToMap();
     },
-
-    getAllOrdersWithoutPerson(){
-      this.$refs.map.searchOrdersWithoutPerson();
-    },
   },
 };
 </script>
