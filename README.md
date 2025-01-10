@@ -41,6 +41,7 @@
 - #### Google Maps | ``npm install --save @googlemaps/js-api-loader``
 - #### Eslint Plugin Vue | ``npm install --save-dev eslint eslint-plugin-vue vue-eslint-parser babel-eslint ``
 - #### PopperJs | ``npm i --save popperjs/core``
+- #### VueX | ``npm install vuex@next --save``
 
 -------------------------------
 
