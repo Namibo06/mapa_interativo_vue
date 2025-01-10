@@ -7,7 +7,7 @@
         <input type="text" v-model="cidade" placeholder="Cidade" />
         <input type="text" v-model="bairro" placeholder="Bairro" />
         <input type="text" v-model="logradouro" placeholder="Logradouro" />
-        <input type="text" v-model="numero" placeholder="Número" />
+        <input type="text" v-model="numeroCasa" placeholder="Número" />
         <input type="text" v-model="complemento" placeholder="Complemento" />
         <input type="text" v-model="pontoReferencia" placeholder="Ponto de Referência" />
         <input type="text" v-model="valorEntrega" placeholder="Valor Total" />
@@ -24,20 +24,37 @@
   export default {
     data() {
       return {
-        clienteName: 'Joca',
-        idPedido: "015697",
-        cep: '44095400',
-        cidade: 'Feira de Santana',
-        bairro: 'Aviário',
-        logradouro: 'Estrada Chácara Brandão',
-        numero: 'S/N',
-        complemento: 'Condominio Rio de Contas',
-        pontoReferencia: 'Próximo ao parque da cidade',
-        valorEntrega: '75.90',
-        dataHoraEntrega: ''
+        clienteName: null,
+        idPedido: null,
+        cep: null,
+        cidade: null,
+        bairro: null,
+        logradouro: null,
+        numeroCasa: null,
+        complemento: null,
+        pontoReferencia: null,
+        valorEntrega: null,
+        dataHoraEntrega: null
       };
     },
+    created(){
+      this.alimentarDados();
+    },
     methods: {
+      alimentarDados(){
+        this.clienteName= 'Joca';
+        this.idPedido= "015697";
+        this.cep= '44095400';
+        this.cidade= 'Feira de Santana';
+        this.bairro= 'Aviário';
+        this.logradouro= 'Estrada Chácara Brandão';
+        this.numeroCasa= 'S/N';
+        this.complemento= 'Condominio Rio de Contas';
+        this.pontoReferencia= 'Próximo ao parque da cidade';
+        this.valorEntrega= '75.90';
+        this.dataHoraEntrega= null;
+      },
+
       atualizarDados(){
         console.log('atualizando');
         const payload = {
@@ -47,7 +64,7 @@
           cidade: this.cidade,
           bairro: this.bairro,
           logradouro: this.logradouro,
-          numero: this.numero,
+          numeroCasa: this.numeroCasa,
           complemento: this.complemento,
           pontoReferencia: this.pontoReferencia,
           valorEntrega: this.valorEntrega,

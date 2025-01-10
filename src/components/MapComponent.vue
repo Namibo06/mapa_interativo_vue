@@ -181,6 +181,7 @@ export default {
     },
 
     async updateOrderDetails(updatedOrder) {
+      console.log(updatedOrder);
       if(
         updatedOrder.idPedido === "" || updatedOrder.idPedido === null || updatedOrder.idPedido === undefined ||
         updatedOrder.clienteName === "" || updatedOrder.clienteName === null || updatedOrder.clienteName === undefined ||
@@ -198,19 +199,10 @@ export default {
         return;
       }
 
-      if(
-        updatedOrder.logradouro === undefined || 
-        updatedOrder.numeroCasa === undefined || 
-        updatedOrder.bairro === undefined ||
-        updatedOrder.pontoReferencia === undefined || 
-        updatedOrder.numeroCasa === undefined 
-      ){
-        updatedOrder.logradouro = "";
-        updatedOrder.numeroCasa = "";
-        updatedOrder.bairro = "";
-        updatedOrder.pontoReferencia = ""; 
-        updatedOrder.numeroCasa = "";
-      }
+      if(updatedOrder.logradouro === undefined ){updatedOrder.logradouro = "";}
+      if(updatedOrder.bairro === undefined ){updatedOrder.bairro = "";}
+      if(updatedOrder.pontoReferencia === undefined){updatedOrder.pontoReferencia = ""; }
+      if(updatedOrder.numeroCasa === undefined ){updatedOrder.numeroCasa = "";}
 
       const orderIndex = this.pedidoArrayMerge.findIndex(pedido => {
         return pedido.ped_numero === updatedOrder.idPedido;
@@ -223,15 +215,14 @@ export default {
         pedido.ped_numero = updatedOrder.idPedido;
         pedido.cliente.cli_nome = updatedOrder.clienteName;
         pedido.ped_endereco_entrega = `
-          <strong>Logradouro:</strong> ${updatedOrder.logradouro} 
-          <strong>Número:</strong> ${updatedOrder.numeroCasa} 
-          <strong>Bairro:</strong> ${updatedOrder.bairro} 
-          <strong>Complemento:</strong> ${updatedOrder.complemento} 
-          <strong>Ponto de referência:</strong> ${updatedOrder.pontoReferencia} 
-          <strong>Município:</strong> ${updatedOrder.cidade} 
+          <strong>Logradouro:</strong> ${updatedOrder.logradouro} |
+          <strong>Número:</strong> ${updatedOrder.numeroCasa} |
+          <strong>Bairro:</strong> ${updatedOrder.bairro} | 
+          <strong>Complemento:</strong> ${updatedOrder.complemento} | 
+          <strong>Ponto de referência:</strong> ${updatedOrder.pontoReferencia} | 
+          <strong>Município:</strong> ${updatedOrder.cidade} | 
           <strong>CEP:</strong> ${updatedOrder.cep}`;
         pedido.ped_valor_total = updatedOrder.valorEntrega;
-        pedido.ped_data = null
         pedido.ped_data = datetime;
 
         const newLocation = await this.getLatLongFromCEP(updatedOrder.cep);
@@ -262,13 +253,20 @@ export default {
             this.infoWindows[marker.id] = new google.maps.InfoWindow({
               content: `
                 <div>
-                  <strong>N° Pedido: </strong> ${this.getNumbers(pedido.ped_numero)}<br><br>
-                  <strong>Nome: </strong> ${pedido.cliente.cli_nome}<br><br>
-                  <strong>Endereço Completo: </strong> ${this.removeBrTags(pedido.ped_endereco_entrega)}<br><br>
-                  <strong>Valor: </strong> ${pedido.ped_valor_total}<br><br>
-                  <strong>Data e Hora de Entrega: </strong> ${pedido.ped_data}
+                  <strong>N° Pedido: </strong> 
+                  ${this.getNumbers(pedido.ped_numero)}<br><br>
+                  <strong>Nome: </strong> 
+                  ${pedido.cliente.cli_nome}<br><br>
+                  <strong>Endereço Completo: </strong> 
+                  ${this.removeBrTags(pedido.ped_endereco_entrega)}<br><br>
+                  <strong>Valor: </strong> 
+                  ${pedido.ped_valor_total}<br><br>
+                  <strong>Data e Hora de Entrega: </strong> 
+                  ${pedido.ped_data}
                 </div>` 
             });
+
+            console.log(pedido.ped_data);
 
             marker.marker.addListener('click', () => { 
               this.infoWindows[marker.id].open({ 
@@ -290,10 +288,12 @@ export default {
     },
 
     updateDataForInfoWindow(datetime){
+      console.log(datetime);
       const arrayDateTime = datetime.split('T');
       const date = arrayDateTime[0].split('-');
       const time = arrayDateTime[1];
       const dateFormatted = date[2] + "/" + date[1] + "/" + date[0] + " " + time;
+      console.log(dateFormatted);
       return dateFormatted;
     },
 
