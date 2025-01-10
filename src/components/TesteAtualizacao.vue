@@ -13,9 +13,9 @@
         <input type="text" v-model="valorEntrega" placeholder="Valor Total" />
         <input type="datetime-local" v-model="dataHoraEntrega" />
   
-        <button type="submit">Atualizar</button>
+        <button type="submit" @click="cliqueiNaFuncao('atualizar')">Atualizar</button>
 
-        <button type="button">Marcar como Entregue</button>
+        <button type="button" @click="cliqueiNaFuncao('entregue')">Marcar como Entregue</button>
       </form>
     </main>
 </template>
@@ -38,7 +38,8 @@
       };
     },
     methods: {
-      enviarFormSemAtualizar() {
+      atualizarDados(){
+        console.log('atualizando');
         const payload = {
           idPedido: this.idPedido,
           clienteName: this.clienteName,
@@ -54,7 +55,24 @@
         };
   
         this.$emit('atualizar-dados', payload);
-      }
+      },
+
+      marcarComoEntregue(){
+        console.log('entregando');
+        this.$emit('marcar-como-entregue', this.idPedido);
+      },
+
+      cliqueiNaFuncao(opcao){
+        this.enviarFormSemAtualizar(opcao)
+      },
+
+      enviarFormSemAtualizar(data) {
+        if(data === "atualizar"){
+          this.atualizarDados();
+        }else if(data === "entregue"){
+          this.marcarComoEntregue();
+        }
+      },
     }
   };
 </script>
