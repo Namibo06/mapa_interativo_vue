@@ -210,7 +210,6 @@ export default {
 
       if (orderIndex !== -1) { 
         const pedido = this.pedidoArrayMerge[orderIndex];
-        const datetime = this.updateDataForInfoWindow(updatedOrder.dataHoraEntrega);
 
         pedido.ped_numero = updatedOrder.idPedido;
         pedido.cliente.cli_nome = updatedOrder.clienteName;
@@ -223,7 +222,6 @@ export default {
           <strong>Município:</strong> ${updatedOrder.cidade} | 
           <strong>CEP:</strong> ${updatedOrder.cep}`;
         pedido.ped_valor_total = updatedOrder.valorEntrega;
-        pedido.ped_data = datetime;
 
         const newLocation = await this.getLatLongFromCEP(updatedOrder.cep);
         if (newLocation) {
@@ -248,8 +246,6 @@ export default {
               this.infoWindows[marker.id].close();
             }
 
-            console.log(pedido.ped_data);
-
             this.infoWindows[marker.id] = new google.maps.InfoWindow({
               content: `
                 <div>
@@ -265,9 +261,7 @@ export default {
                   ${pedido.ped_data}
                 </div>` 
             });
-
-            console.log(pedido.ped_data);
-
+            
             marker.marker.addListener('click', () => { 
               this.infoWindows[marker.id].open({ 
                 anchor: marker.marker,
