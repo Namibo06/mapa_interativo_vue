@@ -30,6 +30,10 @@ export default {
     updatedOrder: { 
       type: Object, 
       default: null 
+    },
+    marcadoComoEntregue: { 
+      type: String, 
+      default: null 
     }
   },
   data() {
@@ -75,6 +79,11 @@ export default {
       if (newValue) { 
         this.updateOrderDetails(newValue); 
       } 
+    },
+    marcadoComoEntregue(newValue) { 
+      if (newValue) { 
+        this.finalizarEntrega(newValue); 
+      } 
     }
   },
   mounted() {
@@ -114,6 +123,41 @@ export default {
       this.pedidoArrayMerge = this.pedidoProducaoArray.concat(this.pedidoSaiuEntregaArray,this.pedidoEntregueArray);
 
       this.directionsService = new google.maps.DirectionsService();
+    },
+
+    finalizarEntrega(idPedido) {
+      const orderIndex = this.pedidoArrayMerge.findIndex(pedido => {
+        console.log(pedido);
+        console.log(pedido.ped_numero + ' === ' + idPedido);
+        return pedido.ped_numero === idPedido;
+      });
+
+      if (orderIndex !== -1) {
+        const pedidoRemovido = this.pedidoArrayMerge[orderIndex];
+        pedidoRemovido.ped_entrega = 'N'; 
+
+        this.markers.forEach((marker, index) => {
+          if (marker.id === `customer-${pedidoRemovido.pedido_id}`) {
+            marker.marker.setMap(null);
+            this.markers.splice(index, 1);
+          }
+        });
+
+        this.polylines.forEach((polyline, index) => {
+          if (polyline.id === `polyline-${pedidoRemovido.pedido_id}`) {
+            polyline.polyline.setMap(null);
+            this.polylines.splice(index, 1);
+          }
+        });
+
+        this.pedidoArrayMerge[orderIndex] = pedidoRemovido;
+
+        this.updateMap();
+
+        console.log(`Pedido com id ${idPedido} foi marcado como não entregue e removido do mapa.`);
+      } else {
+        console.log(`Pedido com id ${idPedido} não encontrado.`);
+      }
     },
 
       updateOrderDetails(updatedOrder) { 
@@ -506,14 +550,13 @@ export default {
       this.map.setCenter({ lat: -12.2666, lng: -38.9663 }); 
     },
 
-    updateMap(deliverer, order) {
-      if (deliverer && order) {
-        this.clearMap();
-        this.initMap().then(() => {
-          this.drawRouteForDeliverer(deliverer, order);
-        });
-      }
+    updateMap() {
+      this.clearMap();
+      this.initMap().then(() => {
+        this.addAllOrdersToMap();
+      });
     },
+
   }
 };
 </script>

@@ -1,7 +1,10 @@
 <template>
   <div>
     <main>
-      <TesteAtualizacao @atualizar-dados="atualizarDados" />
+      <TesteAtualizacao 
+        @atualizar-dados="atualizarDados" 
+        @marcar-como-entregue="marcarComoEntregue"
+      />
 
       <div class="couriers_map">
         <div class="card_couriers">
@@ -34,6 +37,7 @@
           :order="selectedOrder" 
           :selectedMultipleCouriers="selectedMultipleCouriers"
           :updatedOrder="updatedOrder"
+          :marcadoComoEntregue="marcadoComoEntregue"
         />
       </div><!--couriers_map-->
     </main>
@@ -45,7 +49,15 @@ import Map from '@/components/MapComponent.vue';
 import { pedidos } from '@/services/order';
 import TesteAtualizacao from './components/TesteAtualizacao.vue';
 
-const fixedColors = ['#FF0000', '#00FF00', '#0000FF', '#FF4500', '#00008B', '#008000', '#FFD700', '#FF1493', '#32CD32']; 
+const fixedColors = [
+  '#FF0000', '#00FF00', '#0000FF', '#FF4500', '#00008B', '#008000', '#FFD700', '#FF1493', '#32CD32', 
+  '#FF6347', '#4682B4', '#FF69B4', '#20B2AA', '#9932CC', '#FF8C00', '#7CFC00', '#9400D3', '#FF00FF', 
+  '#5F9EA0', '#00CED1', '#9ACD32', '#FF7F50', '#6A5ACD', '#8A2BE2', '#808000', '#00FF7F', '#ADFF2F', 
+  '#FFDEAD', '#2E8B57', '#B22222', '#4169E1', '#E9967A', '#8FBC8F', '#DB7093', '#9370DB', '#CD5C5C', 
+  '#4CAF50', '#7B68EE', '#DDA0DD', '#BDB76B', '#87CEEB', '#228B22', '#FF4500', '#9ACD32', '#4682B4', 
+  '#7FFF00', '#BA55D3', '#00FA9A', '#FFD700', '#8A2BE2', '#40E0D0'
+];
+
 const courierColorsMap = {}; 
 let colorIndex = 0;
 
@@ -73,7 +85,8 @@ export default {
       arrayPedidosMergeFacility: [],
       processedEntregador: null,
       validationEntregador: [],
-      updatedOrder: null
+      updatedOrder: null,
+      marcadoComoEntregue: null,
     };
   },
   mounted(){
@@ -88,6 +101,10 @@ export default {
     }
   },
   methods: {
+    marcarComoEntregue(idPedido){
+      this.marcadoComoEntregue = idPedido;
+    },
+
     atualizarDados(payload) { 
       const updatePedido = (pedidoArray) => { 
         const pedidoIndex = pedidoArray.findIndex(pedido => 
