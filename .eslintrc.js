@@ -1,4 +1,7 @@
 module.exports = {
+    rules: { 
+      "no-useless-escape": "off" 
+    },
     globals: {
       process: 'readonly',
       google: 'readonly',
