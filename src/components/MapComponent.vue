@@ -128,6 +128,28 @@ export default {
       this.directionsService = new google.maps.DirectionsService();
     },
 
+    async getLatLongFromCEP(cep) {
+      const apiKey = process.env.VUE_APP_GOOGLE_MAPS_API_KEY;
+      const endpoint = `https://maps.googleapis.com/maps/api/geocode/json?address=${cep}&key=${apiKey}`;
+
+      try {
+          const response = await fetch(endpoint);
+          const data = await response.json();
+
+          const results = data.results;
+          
+          if (results.length > 0) {
+              const location = results[0].geometry.location;
+              return location;
+          } else {
+              throw new Error('Nenhum resultado encontrado para o CEP informado.');
+          }
+      } catch (error) {
+          console.error(error);
+          return null;
+      }
+    },
+
     finalizarEntrega(idPedido) {
       const orderIndex = this.pedidoArrayMerge.findIndex(pedido => {
         return pedido.ped_numero === idPedido;
@@ -158,65 +180,79 @@ export default {
       }
     },
 
-      updateOrderDetails(updatedOrder) { 
-        const orderIndex = this.pedidoArrayMerge.findIndex(pedido => {
-          return pedido.ped_numero === updatedOrder.idPedido;
-        });
-        if (orderIndex !== -1) { 
-          const datetime = this.updateDataForInfoWindow(updatedOrder.dataHoraEntrega);
-          const pedido = this.pedidoArrayMerge[orderIndex];
-          pedido.ped_numero = updatedOrder.idPedido;
-          pedido.cliente.cli_nome = updatedOrder.clienteName;
-          pedido.ped_endereco_entrega = `
-            <strong>Logradouro:</strong> ${updatedOrder.logradouro} 
-            <strong>Número:</strong> ${updatedOrder.numeroCasa} 
-            <strong>Bairro:</strong> ${updatedOrder.bairro} 
-            <strong>Complemento:</strong> ${updatedOrder.complemento} 
-            <strong>Ponto de referência:</strong> ${updatedOrder.pontoReferencia} 
-            <strong>Município:</strong> ${updatedOrder.cidade} 
-            <strong>CEP:</strong> ${updatedOrder.cep}`;
-          //console.log(datetime);
-          pedido.ped_valor_total = updatedOrder.valorEntrega;
-          pedido.ped_data = datetime;
+    async updateOrderDetails(updatedOrder) {
+      const orderIndex = this.pedidoArrayMerge.findIndex(pedido => {
+        return pedido.ped_numero === updatedOrder.idPedido;
+      });
 
-          this.markers.forEach(ped => {
-            console.log(ped);
-            const marker = this.markers.find(m => {
-                return m.id === `customer-${pedido.pedido_id}`;
-            });
-            if (marker) {
-              if (!this.infoWindows) {
-                this.infoWindows = {};
-              }
-              
-              if (this.infoWindows[marker.id]) {
-                this.infoWindows[marker.id].close();
-              }
+      if (orderIndex !== -1) { 
+        const pedido = this.pedidoArrayMerge[orderIndex];
+        const datetime = this.updateDataForInfoWindow(updatedOrder.dataHoraEntrega);
 
-              this.infoWindows[marker.id] = new google.maps.InfoWindow({ 
-                content: `
-                  <div>
-                    <strong>N° Pedido: </strong> ${this.getNumbers(pedido.ped_numero)}<br><br>
-                    <strong>Nome: </strong> ${pedido.cliente.cli_nome}<br><br>
-                    <strong>Endereço Completo: </strong> ${this.removeBrTags(pedido.ped_endereco_entrega)}<br><br>
-                    <strong>Valor: </strong> ${pedido.ped_valor_total}<br><br>
-                    <strong>Data e Hora de Entrega: </strong> ${pedido.ped_data}
-                  </div>` 
-              });
+        pedido.ped_numero = updatedOrder.idPedido;
+        pedido.cliente.cli_nome = updatedOrder.clienteName;
+        pedido.ped_endereco_entrega = `
+          <strong>Logradouro:</strong> ${updatedOrder.logradouro} 
+          <strong>Número:</strong> ${updatedOrder.numeroCasa} 
+          <strong>Bairro:</strong> ${updatedOrder.bairro} 
+          <strong>Complemento:</strong> ${updatedOrder.complemento} 
+          <strong>Ponto de referência:</strong> ${updatedOrder.pontoReferencia} 
+          <strong>Município:</strong> ${updatedOrder.cidade} 
+          <strong>CEP:</strong> ${updatedOrder.cep}`;
+        pedido.ped_valor_total = updatedOrder.valorEntrega;
+        pedido.ped_data = null
+        pedido.ped_data = datetime;
 
-              marker.marker.addListener('click', () => { 
-                this.infoWindows[marker.id].open({ 
-                  anchor: marker.marker,
-                  map: this.map, 
-                  shouldFocus: false 
-                }); 
-              });
+        const newLocation = await this.getLatLongFromCEP(updatedOrder.cep);
+        if (newLocation) {
+          pedido.cliente.enderecos = [{
+            end_coordenadas_lat: newLocation.lat,
+            end_coordenadas_lon: newLocation.lng,
+          }];
+        }
 
-              this.infoWindows[marker.id].open(this.map, marker.marker);
-            } else {
-              console.log('Marker não encontrado para o pedido:', pedido.ped_numero);
-            }
+        this.markers.forEach(ped => {
+          console.log(ped);
+          const marker = this.markers.find(m => {
+            return m.id === `customer-${pedido.pedido_id}`;
           });
+
+          if (marker) {
+            if (!this.infoWindows) {
+              this.infoWindows = {};
+            }
+          
+            if (this.infoWindows[marker.id]) {
+              this.infoWindows[marker.id].close();
+            }
+
+            console.log(pedido.ped_data);
+
+            this.infoWindows[marker.id] = new google.maps.InfoWindow({
+              content: `
+                <div>
+                  <strong>N° Pedido: </strong> ${this.getNumbers(pedido.ped_numero)}<br><br>
+                  <strong>Nome: </strong> ${pedido.cliente.cli_nome}<br><br>
+                  <strong>Endereço Completo: </strong> ${this.removeBrTags(pedido.ped_endereco_entrega)}<br><br>
+                  <strong>Valor: </strong> ${pedido.ped_valor_total}<br><br>
+                  <strong>Data e Hora de Entrega: </strong> ${pedido.ped_data}
+                </div>` 
+            });
+
+            marker.marker.addListener('click', () => { 
+              this.infoWindows[marker.id].open({ 
+                anchor: marker.marker,
+                map: this.map, 
+                shouldFocus: false 
+              }); 
+            });
+
+            this.infoWindows[marker.id].open(this.map, marker.marker);
+            this.addAllOrdersToMap();
+          } else {
+            console.log('Marker não encontrado para o pedido:', pedido.ped_numero);
+          }
+        });
       } else {
         console.log('Pedido não encontrado na lista:', updatedOrder.idPedido);
       }
