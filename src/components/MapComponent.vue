@@ -343,13 +343,13 @@ export default {
               <div>
                 <h5>Endereço Completo </h5>
                 <div style="padding-left: 10px;">
-                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[1])}</h6>
-                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[2])}</h6>
-                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[3])}</h6>
-                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[4])}</h6>
-                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[5])}</h6>
-                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[6])}</h6>
-                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[7])}</h6>
+                  <h6 style="margin-bottom: 5px;">${'<strong>'+this.removeBrTags(arrayAddressComplete[1])}</h6>
+                  <h6 style="margin-bottom: 5px;">${'<strong>'+this.removeBrTags(arrayAddressComplete[2])}</h6>
+                  <h6 style="margin-bottom: 5px;">${'<strong>'+this.removeBrTags(arrayAddressComplete[3])}</h6>
+                  <h6 style="margin-bottom: 5px;">${'<strong>'+this.removeBrTags(arrayAddressComplete[4])}</h6>
+                  <h6 style="margin-bottom: 5px;">${'<strong>'+this.removeBrTags(arrayAddressComplete[5])}</h6>
+                  <h6 style="margin-bottom: 5px;">${'<strong>'+this.removeBrTags(arrayAddressComplete[6])}</h6>
+                  <h6 style="margin-bottom: 5px;">${'<strong>'+this.removeBrTags(arrayAddressComplete[7])}</h6>
                 </div>
               </div>
 
@@ -401,7 +401,13 @@ export default {
 
       this.pedidoArrayMerge.forEach((ped) => {
 
-        if (!ped.entregador || !ped.estabelecimento || !ped.estabelecimento.endereco || !ped.estabelecimento.endereco.end_coordenadas_lat || !ped.estabelecimento.endereco.end_coordenadas_lon || ped.ped_entrega === 'N') {
+        if (!ped.entregador ||
+         !ped.estabelecimento || 
+         !ped.estabelecimento.endereco || 
+         !ped.estabelecimento.endereco.end_coordenadas_lat || 
+         !ped.estabelecimento.endereco.end_coordenadas_lon ||
+          ped.ped_entrega === 'N'
+        ) {
           console.error('Entregador ou localização inválida:', ped);
           return;
         }
