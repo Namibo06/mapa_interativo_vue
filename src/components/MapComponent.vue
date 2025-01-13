@@ -309,12 +309,8 @@ export default {
 
       const icons = { 
         deliverer: { 
-          path: google.maps.SymbolPath.CIRCLE,
-          fillColor: '#fff',
-          fillOpacity: 1,
-          scale: 8,
-          strokeColor: 'black',
-          strokeWeight: 2
+          url: './assets/icone_restaurante.png',
+          scaledSize: new google.maps.Size(32, 32)
         }, 
         restaurant: { 
           url: '', 
@@ -335,17 +331,16 @@ export default {
       if(type === "customer"){
         /**Se a data vinher da atualização não preciso utilizar this.updateDateTime porque cria undefined's na infoWindow*/
         const infowindow = new google.maps.InfoWindow({ 
+        
           content: `
             <div>
-              <strong>N° Pedido: </strong> 
-              ${this.getNumbers(data.ped_numero)}<br><br>
-              <strong>Nome: </strong>
-              ${data.cliente_nome}<br><br>
-              <strong>Endereço Completo: </strong>
-              ${this.removeBrTags(data.endereco_completo)}<br><br>
-              <strong>Valor: </strong>
+              <h2>Pedido ${this.getNumbers(data.ped_numero)}</h2> <br><br>
+              <h5>Cliente: ${data.cliente_nome}</h5><br>
+              <h5>Endereço Completo: </h5>
+              ${this.removeBrTags(data.endereco_completo)}<br>
+              <h5>Valor: </h5>
               ${data.valor_total}<br><br>
-              <strong>Data e Hora de Entrega: </strong>
+              <h5>Data e Hora de Entrega: </h5>
               ${this.updateDateTime(data.data_hora_entrega)}
             </div>` 
         }); 
@@ -479,6 +474,7 @@ export default {
     },
 
     addAllOrdersForDeliverers(deliverers) {
+      console.log('chamei entregador: '+ deliverers);
       if (!Array.isArray(deliverers)) {
         console.error("deliverers não é um array");
         return;
