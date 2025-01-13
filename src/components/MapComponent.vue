@@ -329,19 +329,40 @@ export default {
       });
 
       if(type === "customer"){
+        const arrayAddressComplete = data.endereco_completo.split('<strong>');
         /**Se a data vinher da atualização não preciso utilizar this.updateDateTime porque cria undefined's na infoWindow*/
         const infowindow = new google.maps.InfoWindow({ 
-        
           content: `
-            <div>
-              <h2>Pedido ${this.getNumbers(data.ped_numero)}</h2> <br><br>
-              <h5>Cliente: ${data.cliente_nome}</h5><br>
-              <h5>Endereço Completo: </h5>
-              ${this.removeBrTags(data.endereco_completo)}<br>
-              <h5>Valor: </h5>
-              ${data.valor_total}<br><br>
-              <h5>Data e Hora de Entrega: </h5>
-              ${this.updateDateTime(data.data_hora_entrega)}
+            <div style="padding-left: 10px;padding-right: 20px;color:#333">
+              <h2 style="position: absolute; left: 22px; top: 15px; overflow: auto; width: 352px; height: 290px;">Pedido ${this.getNumbers(data.ped_numero)}</h2>
+
+              <div style='display:flex;flex-direction:row;align-items: center;margin-top:30px;margin-bottom:10px;'>
+                <h5>Cliente:</h5> 
+                <h6 style='padding-left: 10px;padding-top:4px;'> ${data.cliente_nome}</h6>
+              </div>
+
+              <div>
+                <h5>Endereço Completo </h5>
+                <div style="padding-left: 10px;">
+                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[1])}</h6>
+                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[2])}</h6>
+                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[3])}</h6>
+                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[4])}</h6>
+                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[5])}</h6>
+                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[6])}</h6>
+                  <h6 style="margin-bottom: 5px;">${ '<strong>'+this.removeBrTags(arrayAddressComplete[7])}</h6>
+                </div>
+              </div>
+
+              <div style='display:flex;flex-direction:row;align-items: center;margin-top:20px;margin-bottom:10px;'>
+                <h5>Valor:</h5> 
+                <h6 style='padding-left: 10px;padding-top:4px;'>R$${data.valor_total}</h6>
+              </div>
+
+              <div style='display:flex;flex-direction:row;align-items: center;'>
+                <h5>Data e Hora de Entrega:</h5> 
+                <h6 style='padding-left: 10px;padding-top:4px;'>${this.updateDateTime(data.data_hora_entrega)}</h6>
+              </div>
             </div>` 
         }); 
 
@@ -639,4 +660,5 @@ export default {
   z-index: 0; 
   transition: opacity display 0.3s ease-in-out;
 }
+
 </style>
