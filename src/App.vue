@@ -18,7 +18,6 @@
                   'background-color': selectedCouriersState[courier.entregador?.ent_nome] ? courier.entregador.color : '#ffffff',
                   'color': selectedCouriersState[courier.entregador.ent_nome] ? '#ffffff' : '#000000'
                 }"
-
               >
                 <div class="card_custom_option" 
                   @click="changeCardCustomOptionShowHide(courier.entregador.ent_nome)"
@@ -48,16 +47,7 @@
 import Map from '@/components/MapComponent.vue';
 import { pedidos } from '@/services/order';
 import TesteAtualizacao from './components/TesteAtualizacao.vue';
-
-/**colocar em um arquivo e somente puxar quando componente for criado */
-const fixedColors = [
-  '#FF0000', '#00FF00', '#0000FF', '#FF4500', '#00008B', '#008000', '#FFD700', '#FF1493', '#32CD32', 
-  '#FF6347', '#4682B4', '#FF69B4', '#20B2AA', '#9932CC', '#FF8C00', '#7CFC00', '#9400D3', '#FF00FF', 
-  '#5F9EA0', '#00CED1', '#9ACD32', '#FF7F50', '#6A5ACD', '#8A2BE2', '#808000', '#00FF7F', '#ADFF2F', 
-  '#FFDEAD', '#2E8B57', '#B22222', '#4169E1', '#E9967A', '#8FBC8F', '#DB7093', '#9370DB', '#CD5C5C', 
-  '#4CAF50', '#7B68EE', '#DDA0DD', '#BDB76B', '#87CEEB', '#228B22', '#FF4500', '#9ACD32', '#4682B4', 
-  '#7FFF00', '#BA55D3', '#00FA9A', '#FFD700', '#8A2BE2', '#40E0D0'
-];
+import { fixedColors } from './services/fixedColors';
 
 const courierColorsMap = {}; 
 let colorIndex = 0;
@@ -69,6 +59,8 @@ export default {
   },
   data() {
     return {
+      fixedColors,
+      showAllOrders: true,
       showHideCardCustomOption: true,
       pedidos,  
       selectedDeliverer: null,
@@ -157,8 +149,8 @@ export default {
           } else { 
             const entregadorId = pedido.entregador.entregador_id; 
             if (!courierColorsMap[entregadorId]) { 
-              courierColorsMap[entregadorId] = fixedColors[colorIndex];
-              colorIndex = (colorIndex + 1) % fixedColors.length; 
+              courierColorsMap[entregadorId] = this.fixedColors[colorIndex];
+              colorIndex = (colorIndex + 1) % this.fixedColors.length; 
             } 
             pedido.entregador.color = courierColorsMap[entregadorId]; 
           } 
@@ -232,6 +224,7 @@ export default {
     },
 
     mapDeliverers(courier) {
+      this.showAllOrders= false;
       if (
         courier.entregador.ent_nome === "Sem Entregador" ||
         courier.entregador.ent_nome === "Sem entregador" ||
@@ -243,15 +236,20 @@ export default {
         const entregadorId = courier.entregador.entregador_id;
         
         if (!courierColorsMap[entregadorId]) {
-          courierColorsMap[entregadorId] = fixedColors[colorIndex];
-          colorIndex = (colorIndex + 1) % fixedColors.length;
+          courierColorsMap[entregadorId] = this.fixedColors[colorIndex];
+          colorIndex = (colorIndex + 1) % this.fixedColors.length;
         }
         
         courier.entregador.color = courierColorsMap[entregadorId];
       }
 
-      this.selectedCouriersState[courier.entregador.ent_nome] = !this.selectedCouriersState[courier.entregador.ent_nome];
-      this.selectedCouriersState[courier.entregador.entregador_id] = !this.selectedCouriersState[courier.entregador.entregador_id];
+      if(this.showAllOrders){
+        this.selectedCouriersState[courier.entregador.ent_nome] = false;
+        this.selectedCouriersState[courier.entregador.entregador_id] = false; 
+      }else{
+        this.selectedCouriersState[courier.entregador.ent_nome] = !this.selectedCouriersState[courier.entregador.ent_nome];
+        this.selectedCouriersState[courier.entregador.entregador_id] = !this.selectedCouriersState[courier.entregador.entregador_id];
+      }
       this.updateMapDeliverers = courier;
 
       this.selectCourierMap(
@@ -264,30 +262,44 @@ export default {
     },
 
     selectCourierMap(courierName, courierId, courierLocation, courierSelectedCard, courierColor) {
-      console.log(courierName + ":"+ courierColor);
       if ( 
         courierName === "Sem Entregador" || 
         courierName === "Sem entregador" || 
         courierName === "sem Entregador" || 
         courierName === "sem entregador" ) { 
-          console.log(courierName);
           courierColor = "#808080"; 
         } 
 
       this.selectedCouriersState[courierId] = courierSelectedCard;
 
       const courierKey = `${courierName}.${courierId}.${courierLocation.lat}.${courierLocation.lng}.${courierColor}`;
-      const courierKeyValidation = `${courierName}.${courierId}.${courierLocation.lat}.${courierLocation.lng}`;
+      //const courierKeyValidation = `${courierName}.${courierId}.${courierLocation.lat}.${courierLocation.lng}`;
 
-      const validationEntregadorIndex = this.validationEntregador.indexOf(courierKeyValidation);
+      const validationEntregadorIndex = this.validationEntregador.indexOf(courierKey);
+
+      /**index que não permite quando todos for apertado de ele zerar 
+       * 
+       * 1. se tiver ativo fica com index -1
+       * 2. se tiver desativado fica com index 0
+       * 3. o ideal é quando showAllOrders estiver como true, ele ficar com index -1
+       * 4. se showAllOrders estiver como false, ele fica com 0
+       * 
+       * 
+       * ---Testes
+       *  index -1 fica com showAllOrders false = ativei entregador
+       *  index 0 fica com showAllOrders false = desativa entregador
+       *  ativei showAllOrders e apertei em ativar entregador ficou = index 0 e showAllOrders false
+       * 
+      */
+      
 
       if (validationEntregadorIndex !== -1) {
-        this.validationEntregador = this.validationEntregador.filter(item => item !== courierKeyValidation);
+        this.validationEntregador = this.validationEntregador.filter(item => item !== courierKey);
       } else {
-        this.validationEntregador.push(courierKeyValidation);
+        this.validationEntregador.push(courierKey);
         this.selectedMultipleCouriers.push(courierKey);
       }
-      console.log(courierName + ":"+ courierColor);
+
       this.$refs.map.addAllOrdersForDeliverers(this.validationEntregador, courierColor);
     },
 
@@ -299,7 +311,7 @@ export default {
       } else { 
         this.selectedCouriers.forEach(courier => { 
           const deliverer = this.pedidos.producao.find(d => d.entregador.ent_nome === courier); 
-          if (deliverer) { 
+          if (deliverer) {   
             this.$refs.map.addAllOrdersForDeliverers([deliverer], deliverer.entregador.color);
           } 
         }); 
@@ -307,6 +319,7 @@ export default {
     },
 
     getAllOrdersAndDeliverers(){
+      this.showAllOrders= true;
       this.selectedCouriers = []; 
       this.selectedCouriersState = {};
       this.$refs.map.addAllOrdersToMap();
