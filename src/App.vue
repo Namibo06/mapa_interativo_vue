@@ -278,15 +278,12 @@ export default {
         } 
       
       this.selectedCouriersState[courierId] = courierSelectedCard;
+      console.log(this.selectedCouriersState[courierId]);
 
       const courierKey = `${courierName}.${courierId}.${courierLocation.lat}.${courierLocation.lng}.${courierColor}`;
-      //const courierKeyValidation = `${courierName}.${courierId}.${courierLocation.lat}.${courierLocation.lng}`;
 
       let validationEntregadorIndex = this.validationEntregador.indexOf(courierKey);
-      //console.log('apertei no: '+ courierName);
-      //console.log('selectedCard no selectCourierMap: '+courierSelectedCard);
-      //console.log('index: '+ validationEntregadorIndex);
-
+  
       /**index que não permite quando todos for apertado de ele zerar 
        * 
        * 1. se tiver ativo fica com index -1
