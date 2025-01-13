@@ -109,7 +109,7 @@ export const pedidos = {
                 "cliente_reputacao_id": null,
                 "cli_observacao_interna": null,
                 "cli_proxima_compra": null,
-                "enderecos": [
+                "endereco": [
                     {
                         "endereco_id": 1,
                         "end_cep": "44076-636",
@@ -611,7 +611,7 @@ export const pedidos = {
                 "cliente_reputacao_id": null,
                 "cli_observacao_interna": null,
                 "cli_proxima_compra": null,
-                "enderecos": [
+                "endereco": [
                     {
                         "endereco_id": 3,
                         "end_cep": "44076-636",
@@ -1115,7 +1115,7 @@ export const pedidos = {
                 "cliente_reputacao_id": null,
                 "cli_observacao_interna": null,
                 "cli_proxima_compra": null,
-                "enderecos": [
+                "endereco": [
                     {
                         "endereco_id": 3,
                         "end_cep": "44076-636",
@@ -1617,7 +1617,7 @@ export const pedidos = {
                 "cliente_reputacao_id": null,
                 "cli_observacao_interna": null,
                 "cli_proxima_compra": null,
-                "enderecos": []
+                "endereco": []
             },
             "itens": [
                 {
@@ -2111,7 +2111,7 @@ export const pedidos = {
                 "cliente_reputacao_id": null,
                 "cli_observacao_interna": null,
                 "cli_proxima_compra": null,
-                "enderecos": [
+                "endereco": [
                     {
                         "endereco_id": 2,
                         "end_cep": "44076-636",
@@ -2613,7 +2613,7 @@ export const pedidos = {
                 "cliente_reputacao_id": null,
                 "cli_observacao_interna": null,
                 "cli_proxima_compra": null,
-                "enderecos": [
+                "endereco": [
                     {
                         "endereco_id": 3,
                         "end_cep": "44076-636",

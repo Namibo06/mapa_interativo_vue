@@ -226,7 +226,7 @@ export default {
 
         const newLocation = await this.getLatLongFromCEP(updatedOrder.cep);
         if (newLocation) {
-          pedido.cliente.enderecos = [{
+          pedido.cliente.endereco = [{
             end_coordenadas_lat: newLocation.lat,
             end_coordenadas_lon: newLocation.lng,
           }];
@@ -438,12 +438,12 @@ export default {
         }
 
         entregadorPedidos.forEach(pedido => {
-          if (!pedido.cliente || !pedido.cliente.enderecos || pedido.cliente.enderecos.length === 0) {
+          if (!pedido.cliente || !pedido.cliente.endereco || pedido.cliente.endereco.length === 0) {
             console.error('Dados do cliente inválidos no pedido:', pedido);
             return;
           }
 
-          pedido.cliente.enderecos.forEach(cliente => {
+          pedido.cliente.endereco.forEach(cliente => {
             const clienteKey = `${cliente.end_coordenadas_lat},${cliente.end_coordenadas_lon}`;
 
             if (processedClientes.has(clienteKey)) {
@@ -542,7 +542,7 @@ export default {
         }
 
         for (const order of delivererOrders) {
-          order.cliente.enderecos.forEach(cliente => {
+          order.cliente.endereco.forEach(cliente => {
             const clienteKey = `${cliente.end_coordenadas_lat},${cliente.end_coordenadas_lon}`;
 
             if (processedClientes.has(clienteKey)) {
