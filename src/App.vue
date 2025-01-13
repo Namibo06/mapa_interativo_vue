@@ -101,7 +101,7 @@ export default {
     atualizarDados(payload) { 
       const updatePedido = (pedidoArray) => { 
         const pedidoIndex = pedidoArray.findIndex(pedido => 
-          pedido.pedido_id === payload.idPedido
+          pedido.pedido_id === payload.pedidoId
         ); 
         
         if (pedidoIndex !== -1) { 

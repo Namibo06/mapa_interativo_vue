@@ -204,7 +204,6 @@ export default {
       if(updatedOrder.numeroCasa === undefined ){updatedOrder.numeroCasa = "";}
 
       const orderIndex = this.pedidoArrayMerge.findIndex(pedido => {
-        pedido.cliente.data_ja_atualizada = "S";
         return pedido.ped_numero === updatedOrder.idPedido;
       });
 
@@ -396,13 +395,14 @@ export default {
     addAllOrdersToMap() {
       this.clearMap();
 
-      const processedClientes = new Set(); 
-      const processedEntregadores = new Set(); 
+      const processedClientes = new Set();
+      const processedEntregadores = new Set();
       const delivererColors = {};
 
       this.pedidoArrayMerge.forEach((ped) => {
-        if (!ped.estabelecimento.endereco || !ped.estabelecimento.endereco.end_coordenadas_lat || !ped.estabelecimento.endereco.end_coordenadas_lon) {
-          console.error("Entregador ou localização inválida:", ped);
+
+        if (!ped.entregador || !ped.estabelecimento || !ped.estabelecimento.endereco || !ped.estabelecimento.endereco.end_coordenadas_lat || !ped.estabelecimento.endereco.end_coordenadas_lon || ped.ped_entrega === 'N') {
+          console.error('Entregador ou localização inválida:', ped);
           return;
         }
 
@@ -410,25 +410,27 @@ export default {
         const longitudeEstabelecimento = parseFloat(ped.estabelecimento.endereco.end_coordenadas_lon);
         const latLngLiteralEstabelecimento = { lat: latitudeEstabelecimento, lng: longitudeEstabelecimento };
 
-        if (!delivererColors[ped.entregador.entregador_id] && ped.ped_entrega === "S") {
-          if (ped.entregador.ent_nome === "Sem Entregador") {
-            delivererColors[ped.entregador.entregador_id] = "#808080"; 
+        if (!delivererColors[ped.entregador.entregador_id] && ped.ped_entrega === 'S') {
+          if (ped.entregador.ent_nome === 'Sem Entregador') {
+            delivererColors[ped.entregador.entregador_id] = '#808080';
           } else {
             delivererColors[ped.entregador.entregador_id] = ped.entregador.color;
           }
-        } else if (ped.ped_entrega === "N") {
+        } else if (ped.ped_entrega === 'N') {
           return;
         }
 
         const color = delivererColors[ped.entregador.entregador_id];
 
         if (processedEntregadores.has(ped.entregador.entregador_id)) {
-          return; 
+          return;
         }
 
         processedEntregadores.add(ped.entregador.entregador_id);
 
-        const entregadorPedidos = this.pedidoArrayMerge.filter(pedido => pedido.entregador.entregador_id === ped.entregador.entregador_id && pedido.ped_entrega === "S");
+        const entregadorPedidos = this.pedidoArrayMerge.filter(pedido => {
+          return  pedido.entregador && pedido.entregador.entregador_id === ped.entregador.entregador_id && pedido.ped_entrega === 'S';
+        });
 
         if (entregadorPedidos.length === 0) {
           console.log(`Nenhum pedido encontrado para o entregador ${ped.entregador.ent_nome}`);
@@ -437,7 +439,7 @@ export default {
 
         entregadorPedidos.forEach(pedido => {
           if (!pedido.cliente || !pedido.cliente.enderecos || pedido.cliente.enderecos.length === 0) {
-            console.error("Dados do cliente inválidos no pedido:", pedido);
+            console.error('Dados do cliente inválidos no pedido:', pedido);
             return;
           }
 
@@ -462,8 +464,8 @@ export default {
             const longitudeCliente = parseFloat(cliente.end_coordenadas_lon);
             const latLngLiteralCliente = { lat: latitudeCliente, lng: longitudeCliente };
 
-            this.addMarker(latLngLiteralCliente, pedido.cliente.cli_nome, "customer", `customer-${pedido.pedido_id}`, detalhesPedido);
-            this.addMarker(latLngLiteralEstabelecimento, pedido.estabelecimento.est_nome, "estabelecimento", `estabelecimento-${pedido.pedido_id}`, detalhesPedido);
+            this.addMarker(latLngLiteralCliente, pedido.cliente.cli_nome, 'customer', `customer-${pedido.pedido_id}`, detalhesPedido);
+            this.addMarker(latLngLiteralEstabelecimento, pedido.estabelecimento.est_nome, 'estabelecimento', `estabelecimento-${pedido.pedido_id}`, detalhesPedido);
 
             const request = {
               origin: latLngLiteralEstabelecimento,
@@ -486,7 +488,7 @@ export default {
                 directionsRenderer.setDirections(result);
                 this.polylines.push(directionsRenderer);
               } else {
-                console.error("Não foi possível calcular a rota:", status);
+                console.error('Não foi possível calcular a rota:', status);
               }
             });
           });

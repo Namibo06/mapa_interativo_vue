@@ -13,7 +13,7 @@
         <input type="text" v-model="valorEntrega" placeholder="Valor Total" />
         <input type="datetime-local" v-model="dataHoraEntrega" />
   
-        <button type="submit" @click="cliqueiNaFuncao('atualizar')">Atualizar</button>
+        <button type="submit" @click="cliqueiNaFuncao('atualizar')" :disabled="entregaConcluida">Atualizar</button>
 
         <button type="button" @click="cliqueiNaFuncao('entregue')">Marcar como Entregue</button>
       </form>
@@ -24,8 +24,10 @@
   export default {
     data() {
       return {
+        entregaConcluida: false,
         clienteName: null,
-        idPedido: null,
+        pedNumero: null,
+        pedidoId: null,
         cep: null,
         cidade: null,
         bairro: null,
@@ -76,6 +78,7 @@
 
       marcarComoEntregue(){
         console.log('entregando');
+        this.entregaConcluida = true;
         this.$emit('marcar-como-entregue', this.idPedido);
       },
 
