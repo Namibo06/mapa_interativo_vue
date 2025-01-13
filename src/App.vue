@@ -8,7 +8,7 @@
 
       <div class="couriers_map">
         <div class="card_couriers">
-            <button type="button" @click="getAllOrdersAndDeliverers">Todos</button>
+            <button type="button" @click="getAllOrdersAndDeliverers">Todos</button>      
             <div class="couriers_options" v-for="courier in this.arrayPedidosMerge" :key="courier.entregador.entregador_id">
               <button 
                 type="button"
@@ -225,6 +225,11 @@ export default {
     },
 
     clearMapWithMarkersAndPolylines(){
+      this.selectedCouriersState = {};
+      this.selectedCouriers = {};
+
+      this.selectedMultipleCouriers = [];
+      this.validationEntregador = [];
       this.$refs.map.clearMap();
     },
 
@@ -309,7 +314,7 @@ export default {
           this.selectedMultipleCouriers.push(courierKey);
         }
       }else{
-        if (validationEntregadorIndex !== -1) {
+        if (validationEntregadorIndex !== 1) {
           this.validationEntregador = this.validationEntregador.filter(item => item !== courierKey);
         } else {
           this.validationEntregador.push(courierKey);
@@ -339,6 +344,7 @@ export default {
       this.showAllOrders= true;
       this.selectedCouriers = []; 
       this.selectedCouriersState = {};
+      this.validationEntregador = [];
       this.$refs.map.addAllOrdersToMap();
     },
   },
