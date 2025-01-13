@@ -204,6 +204,7 @@ export default {
       if(updatedOrder.numeroCasa === undefined ){updatedOrder.numeroCasa = "";}
 
       const orderIndex = this.pedidoArrayMerge.findIndex(pedido => {
+        pedido.cliente.data_ja_atualizada = "S";
         return pedido.ped_numero === updatedOrder.idPedido;
       });
 
@@ -249,8 +250,6 @@ export default {
               this.infoWindows[marker.id] = new google.maps.InfoWindow(); 
             }
 
-            console.log(pedido.ped_data);
-
             this.infoWindows[marker.id] = new google.maps.InfoWindow({
               content: `
                 <div>
@@ -290,7 +289,7 @@ export default {
       const arrayDateTime = datetime.split('T');
       const date = arrayDateTime[0].split('-');
       const time = arrayDateTime[1];
-      const dateFormatted = date[2] + "/" + date[1] + "/" + date[0] + " " + time;
+      const dateFormatted = date[0] + "-" + date[1] + "-" + date[2] + " " + time;
       return dateFormatted;
     },
 
@@ -334,6 +333,7 @@ export default {
       });
 
       if(type === "customer"){
+        /**Se a data vinher da atualização não preciso utilizar this.updateDateTime porque cria undefined's na infoWindow*/
         const infowindow = new google.maps.InfoWindow({ 
           content: `
             <div>
