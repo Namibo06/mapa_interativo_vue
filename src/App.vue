@@ -20,7 +20,7 @@
                 }"
               >
                 <div class="card_custom_option" 
-                  @click="changeCardCustomOptionShowHide(courier.entregador.ent_nome)"
+              
                   v-if="showHideCardCustomOption"
                   v-show="!selectedCouriersState[courier.entregador.ent_nome]"
                   :style="'background-color:' +  getCourierColor(courier)"></div>
@@ -252,6 +252,8 @@ export default {
       }
       this.updateMapDeliverers = courier;
 
+      //console.log('selected no mapDeliverer: '+this.selectedCouriersState[courier.entregador.ent_nome]);
+
       this.selectCourierMap(
         courier.entregador.ent_nome, 
         courier.entregador.entregador_id, 
@@ -269,13 +271,16 @@ export default {
         courierName === "sem entregador" ) { 
           courierColor = "#808080"; 
         } 
-
+      
       this.selectedCouriersState[courierId] = courierSelectedCard;
 
       const courierKey = `${courierName}.${courierId}.${courierLocation.lat}.${courierLocation.lng}.${courierColor}`;
       //const courierKeyValidation = `${courierName}.${courierId}.${courierLocation.lat}.${courierLocation.lng}`;
 
-      const validationEntregadorIndex = this.validationEntregador.indexOf(courierKey);
+      let validationEntregadorIndex = this.validationEntregador.indexOf(courierKey);
+      //console.log('apertei no: '+ courierName);
+      //console.log('selectedCard no selectCourierMap: '+courierSelectedCard);
+      //console.log('index: '+ validationEntregadorIndex);
 
       /**index que não permite quando todos for apertado de ele zerar 
        * 
@@ -291,13 +296,23 @@ export default {
        *  ativei showAllOrders e apertei em ativar entregador ficou = index 0 e showAllOrders false
        * 
       */
-      
 
-      if (validationEntregadorIndex !== -1) {
-        this.validationEntregador = this.validationEntregador.filter(item => item !== courierKey);
-      } else {
-        this.validationEntregador.push(courierKey);
-        this.selectedMultipleCouriers.push(courierKey);
+      if(courierSelectedCard){
+        validationEntregadorIndex = -1;
+
+        if (validationEntregadorIndex !== -1) {
+          this.validationEntregador = this.validationEntregador.filter(item => item !== courierKey);
+        } else {
+          this.validationEntregador.push(courierKey);
+          this.selectedMultipleCouriers.push(courierKey);
+        }
+      }else{
+        if (validationEntregadorIndex !== -1) {
+          this.validationEntregador = this.validationEntregador.filter(item => item !== courierKey);
+        } else {
+          this.validationEntregador.push(courierKey);
+          this.selectedMultipleCouriers.push(courierKey);
+        }
       }
 
       this.$refs.map.addAllOrdersForDeliverers(this.validationEntregador, courierColor);
