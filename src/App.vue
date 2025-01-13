@@ -180,29 +180,34 @@ export default {
       this.processedEntregador = new Set();
 
       const addPedidosComEntrega = (pedidoArray) => {
-          pedidoArray.forEach(pedido => {
-              if(pedido.ped_entrega !== "S") {
-                  return;
-              }
+        pedidoArray.forEach(pedido => {
+          if(pedido.ped_entrega !== "S") {
+            return;
+          }
 
-              const keyEntregador = `${pedido.entregador.entregador_id}`;
+          const keyEntregador = `${pedido.entregador.entregador_id}`;
 
-              if(this.processedEntregador.has(keyEntregador)){
-                  return;
-              }
-              this.processedEntregador.add(keyEntregador);
-
-              this.arrayPedidosMerge.push(pedido);
-          });
+          if(this.processedEntregador.has(keyEntregador)){
+            return;
+          }
+          this.processedEntregador.add(keyEntregador);
+          
+          this.arrayPedidosMerge.push(pedido);
+        });
       };
 
       addPedidosComEntrega(this.pedidoProducaoArray);
       addPedidosComEntrega(this.pedidoSaiuEntregaArray);
       addPedidosComEntrega(this.pedidoRecebidosArray);
 
-      this.setDeliverersColors();  
-    },
+      this.arrayPedidosMerge.sort((a, b) => {
+        if (a.entregador.ent_nome === "Sem Entregador") return -1;
+        if (b.entregador.ent_nome === "Sem Entregador") return 1;
+        return 0;
+      });
 
+      this.setDeliverersColors();
+    },
 
     handleShowRouteOnMap(courier, order) {
       this.selectedDeliverer = courier;
