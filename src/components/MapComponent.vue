@@ -181,7 +181,6 @@ export default {
     },
 
     async updateOrderDetails(updatedOrder) {
-      console.log(updatedOrder);
       if(
         updatedOrder.idPedido === "" || updatedOrder.idPedido === null || updatedOrder.idPedido === undefined ||
         updatedOrder.clienteName === "" || updatedOrder.clienteName === null || updatedOrder.clienteName === undefined ||
@@ -223,6 +222,8 @@ export default {
           <strong>CEP:</strong> ${updatedOrder.cep}`;
         pedido.ped_valor_total = updatedOrder.valorEntrega;
 
+        pedido.ped_data = this.updateDataForInfoWindow(updatedOrder.dataHoraEntrega);
+
         const newLocation = await this.getLatLongFromCEP(updatedOrder.cep);
         if (newLocation) {
           pedido.cliente.enderecos = [{
@@ -241,10 +242,14 @@ export default {
             if (!this.infoWindows) {
               this.infoWindows = {};
             }
-          
+
             if (this.infoWindows[marker.id]) {
-              this.infoWindows[marker.id].close();
+              this.infoWindows[marker.id].setContent(""); 
+            } else { 
+              this.infoWindows[marker.id] = new google.maps.InfoWindow(); 
             }
+
+            console.log(pedido.ped_data);
 
             this.infoWindows[marker.id] = new google.maps.InfoWindow({
               content: `
@@ -258,10 +263,10 @@ export default {
                   <strong>Valor: </strong> 
                   ${pedido.ped_valor_total}<br><br>
                   <strong>Data e Hora de Entrega: </strong> 
-                  ${pedido.ped_data}
+                  ${updatedOrder.dataHoraEntrega}
                 </div>` 
             });
-            
+
             marker.marker.addListener('click', () => { 
               this.infoWindows[marker.id].open({ 
                 anchor: marker.marker,
@@ -281,13 +286,11 @@ export default {
       }
     },
 
-    updateDataForInfoWindow(datetime){
-      console.log(datetime);
+    updateDataForInfoWindow(datetime) {
       const arrayDateTime = datetime.split('T');
       const date = arrayDateTime[0].split('-');
       const time = arrayDateTime[1];
       const dateFormatted = date[2] + "/" + date[1] + "/" + date[0] + " " + time;
-      console.log(dateFormatted);
       return dateFormatted;
     },
 
@@ -375,190 +378,206 @@ export default {
     },
 
     addAllOrdersToMap() {
-      this.clearMap(); 
+      this.clearMap();
 
       const processedClientes = new Set(); 
+      const processedEntregadores = new Set(); 
+      const delivererColors = {};
 
-      for (const ped of this.pedidoArrayMerge) {
-        if(ped.ped_entrega === "N"){
-          continue;
-        }
-
-        if (!ped.entregador || !ped.entregador.ent_coordenadas) {
+      this.pedidoArrayMerge.forEach((ped) => {
+        if (!ped.estabelecimento.endereco || !ped.estabelecimento.endereco.end_coordenadas_lat || !ped.estabelecimento.endereco.end_coordenadas_lon) {
           console.error("Entregador ou localização inválida:", ped);
-          continue;
+          return;
         }
 
-        const latitudeEntregador = parseFloat(ped.entregador.ent_coordenadas.lat);
-        const longitudeEntregador = parseFloat(ped.entregador.ent_coordenadas.lng);
-        const latLngLiteralDeliverer = { lat: latitudeEntregador, lng: longitudeEntregador };
+        const latitudeEstabelecimento = parseFloat(ped.estabelecimento.endereco.end_coordenadas_lat);
+        const longitudeEstabelecimento = parseFloat(ped.estabelecimento.endereco.end_coordenadas_lon);
+        const latLngLiteralEstabelecimento = { lat: latitudeEstabelecimento, lng: longitudeEstabelecimento };
 
-        const entregadorPedidos = this.pedidoArrayMerge.filter(pedido => {
-          if (!pedido || !pedido.entregador) {
-            console.error("Pedido ou entregador inválido:", pedido);
-            return false;
+        if (!delivererColors[ped.entregador.entregador_id] && ped.ped_entrega === "S") {
+          if (ped.entregador.ent_nome === "Sem Entregador") {
+            delivererColors[ped.entregador.entregador_id] = "#808080"; 
+          } else {
+            delivererColors[ped.entregador.entregador_id] = ped.entregador.color;
           }
-          return pedido.entregador.entregador_id === ped.entregador.entregador_id;
-        });
-
-        if (!entregadorPedidos || entregadorPedidos.length === 0) {
-          console.log(`Nenhum pedido encontrado para o entregador ${ped.entregador.ent_nome}`);
-          continue;
+        } else if (ped.ped_entrega === "N") {
+          return;
         }
 
-        for (const pedido of entregadorPedidos) {
-          if (pedido.ped_entrega === 'N') {
-            console.log(`Pedido ${pedido.pedido_id} não foi entregue, pulando a renderização.`);
-            continue;
-          }
-          if (!pedido.cliente || !pedido.cliente.enderecos || pedido.cliente.enderecos.length === 0) {
-            console.error("Dados do cliente inválidos no pedido:", pedido);
-            continue;
-          }
+        const color = delivererColors[ped.entregador.entregador_id];
 
-          pedido.cliente.enderecos.forEach(cliente => {
-              const clienteKey = `${cliente.end_coordenadas_lat},${cliente.end_coordenadas_lon}`;
-
-              if (processedClientes.has(clienteKey)) {
-                //console.log("Endereço já processado:", clienteKey);
-                return;
-              }
-
-              processedClientes.add(clienteKey);
-      
-              const detalhesPedido = {
-                ped_numero: ped.ped_numero,
-                cliente_nome: ped.cliente.cli_nome,
-                endereco_completo: ped.ped_endereco_entrega,
-                valor_total: ped.ped_valor_total,
-                data_hora_entrega: ped.ped_data
-              };
-
-              const latitudeCliente = parseFloat(cliente.end_coordenadas_lat);
-              const longitudeCliente = parseFloat(cliente.end_coordenadas_lon);
-              const latLngLiteralCliente = { lat: latitudeCliente, lng: longitudeCliente };
-
-              this.addMarker(latLngLiteralCliente, pedido.cliente.cli_nome, "customer", `customer-${pedido.pedido_id}`, detalhesPedido);
-              
-              this.addMarker(latLngLiteralDeliverer, ped.entregador.ent_nome, "deliverer", `deliverer-${pedido.pedido_id}`, detalhesPedido);
-
-              const request = {
-                origin: latLngLiteralDeliverer,
-                destination: latLngLiteralCliente,
-                travelMode: google.maps.TravelMode.DRIVING,
-              };
-
-              this.directionsService.route(request, (result, status) => {
-                if (status === google.maps.DirectionsStatus.OK) {
-                  const directionsRenderer = new google.maps.DirectionsRenderer({
-                    map: this.map,
-                    suppressMarkers: true,
-                    polylineOptions: {
-                      strokeColor: ped.entregador.color, 
-                      strokeOpacity: 1.0,
-                      strokeWeight: 4,
-                    },
-                  });
-
-                  directionsRenderer.setDirections(result);
-                  this.polylines.push(directionsRenderer);
-                } else {
-                  console.error("Não foi possível calcular a rota:", status);
-                }
-              });
-          });
-        }
-      }
-    },
-
-     addAllOrdersForDeliverers(deliverers,) {
-        if (!Array.isArray(deliverers)) {
-          console.error("deliverers não é um array"); 
+        if (processedEntregadores.has(ped.entregador.entregador_id)) {
           return; 
         }
 
-        this.clearMap(); 
+        processedEntregadores.add(ped.entregador.entregador_id);
 
-        for (const deliverer of deliverers) {
-          let delivererArray = deliverer.split('.'); 
-          let colorDeliverer = delivererArray[6];
+        const entregadorPedidos = this.pedidoArrayMerge.filter(pedido => pedido.entregador.entregador_id === ped.entregador.entregador_id && pedido.ped_entrega === "S");
 
-          const delivererOrders = this.pedidoArrayMerge.filter(order => {
-            if (order.ped_entrega === 'N') {
-              console.log(`Pedido ${order.pedido_id} não foi entregue, pulando a renderização.`);
+        if (entregadorPedidos.length === 0) {
+          console.log(`Nenhum pedido encontrado para o entregador ${ped.entregador.ent_nome}`);
+          return;
+        }
+
+        entregadorPedidos.forEach(pedido => {
+          if (!pedido.cliente || !pedido.cliente.enderecos || pedido.cliente.enderecos.length === 0) {
+            console.error("Dados do cliente inválidos no pedido:", pedido);
+            return;
+          }
+
+          pedido.cliente.enderecos.forEach(cliente => {
+            const clienteKey = `${cliente.end_coordenadas_lat},${cliente.end_coordenadas_lon}`;
+
+            if (processedClientes.has(clienteKey)) {
               return;
             }
 
-            if (order.entregador) {
-                return order.entregador.ent_nome === delivererArray[0];
-            }
-            return false;
-          });
-          
-          if (!delivererOrders || delivererOrders.length === 0) {
-              console.log('Id do entregador não encontrado');
-              continue; 
-          }
+            processedClientes.add(clienteKey);
 
-          for (const order of delivererOrders) {
-              order.cliente.enderecos.forEach(cliente => {
-                const clienteKey = `${cliente.end_coordenadas_lat},${cliente.end_coordenadas_lon}`;
+            const detalhesPedido = {
+              ped_numero: pedido.ped_numero,
+              cliente_nome: pedido.cliente.cli_nome,
+              endereco_completo: pedido.ped_endereco_entrega,
+              valor_total: pedido.ped_valor_total,
+              data_hora_entrega: pedido.ped_data,
+            };
 
-                const processedClientes = new Set();
+            const latitudeCliente = parseFloat(cliente.end_coordenadas_lat);
+            const longitudeCliente = parseFloat(cliente.end_coordenadas_lon);
+            const latLngLiteralCliente = { lat: latitudeCliente, lng: longitudeCliente };
 
-                if (processedClientes.has(clienteKey)) {
-                  return;
-                }
+            this.addMarker(latLngLiteralCliente, pedido.cliente.cli_nome, "customer", `customer-${pedido.pedido_id}`, detalhesPedido);
+            this.addMarker(latLngLiteralEstabelecimento, pedido.estabelecimento.est_nome, "estabelecimento", `estabelecimento-${pedido.pedido_id}`, detalhesPedido);
 
-                processedClientes.add(clienteKey);
+            const request = {
+              origin: latLngLiteralEstabelecimento,
+              destination: latLngLiteralCliente,
+              travelMode: google.maps.TravelMode.DRIVING,
+            };
 
-                const detalhesPedido = {
-                  ped_numero: order.ped_numero,
-                  cliente_nome: order.cliente.cli_nome,
-                  endereco_completo: order.ped_endereco_entrega,
-                  valor_total: order.ped_valor_total,
-                  data_hora_entrega: order.ped_data
-                };
-
-                const latitudeEntregador = parseFloat(order.entregador.ent_coordenadas.lat);
-                const longitudeEntregador = parseFloat(order.entregador.ent_coordenadas.lng);
-                const latLngLiteralDeliverer = { lat: latitudeEntregador, lng: longitudeEntregador };
-
-                const latitudeCliente = parseFloat(cliente.end_coordenadas_lat);
-                const longitudeCliente = parseFloat(cliente.end_coordenadas_lon);
-                const latLngLiteralCliente = { lat: latitudeCliente, lng: longitudeCliente };
-
-                this.addMarker(latLngLiteralCliente, order.cliente.cli_nome, "customer", `customer-${order.pedido_id}`, detalhesPedido);
-                
-                this.addMarker(latLngLiteralDeliverer, order.entregador.ent_nome, "deliverer", `deliverer-${order.pedido_id}`, detalhesPedido);
-
-                const request = {
-                  origin: latLngLiteralDeliverer, 
-                  destination: latLngLiteralCliente, 
-                  travelMode: google.maps.TravelMode.DRIVING  
-                };
-
-                this.directionsService.route(request, (result, status) => {
-                  if (status === google.maps.DirectionsStatus.OK) {
-                    const directionsRenderer = new google.maps.DirectionsRenderer({
-                      map: this.map,
-                      suppressMarkers: true,  
-                      polylineOptions: {
-                        strokeColor: order.entregador.color || colorDeliverer, 
-                        strokeOpacity: 1.0,
-                        strokeWeight: 4 
-                      }
-                    });
-                    directionsRenderer.setDirections(result);
-
-                    this.polylines.push(directionsRenderer);
-                  } else {
-                    console.error("Não foi possível calcular a rota:", status);
-                  }
+            this.directionsService.route(request, (result, status) => {
+              if (status === google.maps.DirectionsStatus.OK) {
+                const directionsRenderer = new google.maps.DirectionsRenderer({
+                  map: this.map,
+                  suppressMarkers: true,
+                  polylineOptions: {
+                    strokeColor: color,
+                    strokeOpacity: 1.0,
+                    strokeWeight: 4,
+                  },
                 });
-              });
-          }
+
+                directionsRenderer.setDirections(result);
+                this.polylines.push(directionsRenderer);
+              } else {
+                console.error("Não foi possível calcular a rota:", status);
+              }
+            });
+          });
+        });
+      });
+    },
+
+    addAllOrdersForDeliverers(deliverers) {
+      if (!Array.isArray(deliverers)) {
+        console.error("deliverers não é um array");
+        return;
+      }
+
+      this.clearMap();
+
+      const processedClientes = new Set();
+      const delivererColors = {};
+
+      for (const deliverer of deliverers) {
+        const delivererParts = deliverer.split('.');
+        let delivererName = delivererParts[0];
+        let color = delivererParts[delivererParts.length - 1];  
+        if (!color) {
+          console.error(`Cor não definida para o entregador ${delivererName}. Usando cor padrão.`);
+          color = "#808080";
         }
+        delivererColors[delivererName] = color;
+      }
+
+      for (const deliverer of deliverers) {
+        const delivererParts = deliverer.split('.');
+        let delivererName = delivererParts[0];
+        let delivererColor = delivererColors[delivererName];
+
+        const delivererOrders = this.pedidoArrayMerge.filter(order => {
+          if (order.ped_entrega === 'N') {
+            console.log(`Pedido ${order.pedido_id} não foi entregue, pulando a renderização.`);
+            return false;
+          }
+
+          if (order.entregador) {
+            return order.entregador.ent_nome === delivererName;
+          }
+          return false;
+        });
+
+        if (!delivererOrders || delivererOrders.length === 0) {
+          console.log('Id do entregador não encontrado');
+          continue;
+        }
+
+        for (const order of delivererOrders) {
+          order.cliente.enderecos.forEach(cliente => {
+            const clienteKey = `${cliente.end_coordenadas_lat},${cliente.end_coordenadas_lon}`;
+
+            if (processedClientes.has(clienteKey)) {
+              return;
+            }
+
+            processedClientes.add(clienteKey);
+
+            const detalhesPedido = {
+              ped_numero: order.ped_numero,
+              cliente_nome: order.cliente.cli_nome,
+              endereco_completo: order.ped_endereco_entrega,
+              valor_total: order.ped_valor_total,
+              data_hora_entrega: order.ped_data
+            };
+
+            const latitudeEstabelecimento = parseFloat(order.estabelecimento.endereco.end_coordenadas_lat);
+            const longitudeEstabelecimento = parseFloat(order.estabelecimento.endereco.end_coordenadas_lon);
+            const latLngLiteralEstabelecimento = { lat: latitudeEstabelecimento, lng: longitudeEstabelecimento };
+
+            const latitudeCliente = parseFloat(cliente.end_coordenadas_lat);
+            const longitudeCliente = parseFloat(cliente.end_coordenadas_lon);
+            const latLngLiteralCliente = { lat: latitudeCliente, lng: longitudeCliente };
+
+            this.addMarker(latLngLiteralCliente, order.cliente.cli_nome, "customer", `customer-${order.pedido_id}`, detalhesPedido);
+            this.addMarker(latLngLiteralEstabelecimento, order.estabelecimento.est_nome, "estabelecimento", `estabelecimento-${order.pedido_id}`, detalhesPedido);
+
+            const request = {
+              origin: latLngLiteralEstabelecimento,
+              destination: latLngLiteralCliente,
+              travelMode: google.maps.TravelMode.DRIVING,
+            };
+
+            this.directionsService.route(request, (result, status) => {
+              if (status === google.maps.DirectionsStatus.OK) {
+                const directionsRenderer = new google.maps.DirectionsRenderer({
+                  map: this.map,
+                  suppressMarkers: true,
+                  polylineOptions: {
+                    strokeColor: delivererColor,  
+                    strokeOpacity: 1.0,
+                    strokeWeight: 4,
+                  },
+                });
+
+                directionsRenderer.setDirections(result);
+                this.polylines.push(directionsRenderer); 
+              } else {
+                console.error("Não foi possível calcular a rota:", status);
+              }
+            });
+          });
+        }
+      }
     },
 
     setPolylineColor(color) {
