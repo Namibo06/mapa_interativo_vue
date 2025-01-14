@@ -283,7 +283,6 @@ export default {
         } 
       
       this.selectedCouriersState[courierId] = courierSelectedCard;
-      console.log(this.selectedCouriersState[courierId]);
 
       const courierKey = `${courierName}.${courierId}.${courierLocation.lat}.${courierLocation.lng}.${courierColor}`;
 
