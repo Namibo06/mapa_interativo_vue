@@ -233,7 +233,7 @@ export default {
         }
 
         this.markers.forEach(ped => {
-          console.log(ped);
+          console.log(ped.pedido_id);
           const marker = this.markers.find(m => {
             return m.id === `customer-${pedido.pedido_id}`;
           });
