@@ -41,13 +41,12 @@
 - #### Google Maps | ``npm install --save @googlemaps/js-api-loader``
 - #### Eslint Plugin Vue | ``npm install --save-dev eslint eslint-plugin-vue vue-eslint-parser babel-eslint ``
 - #### PopperJs | ``npm i --save popperjs/core``
-- #### VueX | ``npm install vuex@next --save``
 
 -------------------------------
 
 ### Configuração do Ambiente
 
-#### 1. Certifique-se de ter Node.js na versão 12.9+ e NPM instalado, caso não tenha, clique no link abaixo.
+#### 1. Certifique-se de ter Node.js na versão 12.9+ e NPM instalado na versão 6.14+, caso não tenha, clique no link abaixo.
 #### Clique [aqui](https://nodejs.org/en/download/prebuilt-installer/current) para fazer o download no site do NodeJS
 
 #### 1. Certifique-se de ter uma IDE instalada, como por exemplo o VsCode, caso não tenha, clique no link abaixo.
@@ -63,7 +62,7 @@ npm i -g vue@3.2.26
 git clone https://github.com/Namibo06/mapa_interativo_vuehttps://github.com/Namibo06/mapa_interativo_vue
 ```
 
-#### 4. Instale as dependências:
+#### 4. Instale as dependências do projeto:
 ```javascript
 npm install
 ```
@@ -78,6 +77,7 @@ VUE_APP_GOOGLE_MAPS_API_KEY = SUA_API_KEY_AQUI
 #### 6. Habilite as seguintes API's em "API's e Serviços" no Google Cloud Console:
 - #### 1. Google Maps JavaScript API
 - #### 2. Directions API
+- #### 3. Geocoding API
 
 #### 7. Inicie o servidor de desenvolvimento:
 ```javascript
@@ -88,10 +88,10 @@ npm run serve
 
 #### Uso da Aplicação
 #### 1. Carregamento do Mapa:
-- #### O mapa é carregado automaticamente ao iniciar a aplicação.
+- #### O mapa é carregado automaticamente ao iniciar a aplicação, já com todas os pedidos pendentes para entrega de determinado estabelecimento.
 
 #### 2. Adicionar Filtros:
-- #### No lado superior direito, por padrão ele puxa todos os pedidos pendentes, basta clicar nas outras opções que são 'Sem entregador', e os demais motoristas, que poderá perceber as alterações dinâmicas.
+- #### No lado superior direito, por padrão ele puxa todos os pedidos pendentes, basta clicar nas outras opções que são 'Sem entregador', e os demais entregadores, que poderá perceber as alterações dinâmicas.
 
 -------------------------
 
@@ -102,9 +102,13 @@ npm run serve
 
 - #### ``public/assets: Pasta de imagens para icones.``
 
-- #### ``src/components/Map.vue: Componente principal que implementa o mapa interativo.``
+- #### ``src/components/MapComponent.vue: Componente principal que implementa o mapa interativo.``
+
+- #### ``src/components/TesteAtualizacao.vue: Componente para testes de marcar pedido como entregue e atualizar sem precisar a página recarregar.``
 
 - #### ``src/services/order.js: Módulo que gerencia os dados dos pedidos e entregadores.``
+
+- #### ``src/services/order.js: Módulo que gerencia as cores para as polylines e para as legendas no card de entregadores.``
 
 - #### ``src/App.vue: Componente principal que renderiza toda a aplicação e lida com card de filtros.``
 
