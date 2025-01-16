@@ -1,10 +1,10 @@
 <template>
   <div>
     <main>
-      <TesteAtualizacao 
+      <!--<TesteAtualizacao 
         @atualizar-dados="atualizarDados" 
         @marcar-como-entregue="marcarComoEntregue"
-      />
+      />-->
 
       <div class="couriers_map">
         <div class="card_couriers">
@@ -46,7 +46,7 @@
 <script>
 import Map from '@/components/MapComponent.vue';
 import { pedidos } from '@/services/order';
-import TesteAtualizacao from './components/TesteAtualizacao.vue';
+//import TesteAtualizacao from './components/TesteAtualizacao.vue';
 import { fixedColors } from './services/fixedColors';
 
 const courierColorsMap = {}; 
@@ -54,7 +54,7 @@ let colorIndex = 0;
 
 export default {
   components: {
-    TesteAtualizacao,
+    //TesteAtualizacao,
     Map
   },
   data() {
@@ -94,11 +94,11 @@ export default {
     }
   },
   methods: {
-    marcarComoEntregue(idPedido){
+    /*marcarComoEntregue(idPedido){
       this.marcadoComoEntregue = idPedido;
-    },
+    },*/
 
-    atualizarDados(payload) { 
+    /*atualizarDados(payload) { 
       const updatePedido = (pedidoArray) => { 
         const pedidoIndex = pedidoArray.findIndex(pedido => 
           pedido.pedido_id === payload.pedidoId
@@ -126,7 +126,7 @@ export default {
       } 
 
       this.updatedOrder = payload;  
-    },
+    },*/
 
     changeCardCustomOptionShowHide(courierName) {
       this.showHideCardCustomOption = !this.showHideCardCustomOption;
